@@ -47,10 +47,10 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(MainActivity.this, mToken, Toast.LENGTH_SHORT).show();
 
 
-        String login_body = "{\"lat\" : \"" + "..." + "\", \"long\":\"" + "..." + "\"}";
+            String l = "?lat=12.124124&lng=12.344345";
         try {
             // Simulate network access.
-            Response response = post("https://mccg15.herokuapp.com/application/list", login_body);
+            Response response = get("https://mccg15.herokuapp.com/application"+l);
             int code = response.code();
             if (code == 200) {
                 Toast.makeText(MainActivity.this, "success", Toast.LENGTH_LONG).show();
@@ -64,13 +64,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    Response post(String url, String json) throws IOException {
-        RequestBody body = RequestBody.create(JSON, json);
-
+    Response get(String url) throws IOException {
         Request request = new Request.Builder()
                 .url(url)
-                .addHeader("token", mToken.toString())
-                .post(body)
+                .addHeader("Authorization", "\""+mToken+"\"")
                 .build();
         Response response = client.newCall(request).execute();
         return response;
