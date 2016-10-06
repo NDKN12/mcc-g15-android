@@ -44,30 +44,30 @@ public class MainActivity extends AppCompatActivity {
 
 
         mToken = getIntent().getStringExtra("token");
-        Toast.makeText(MainActivity.this, mToken, Toast.LENGTH_SHORT).show();
+       // Toast.makeText(MainActivity.this, mToken, Toast.LENGTH_SHORT).show();
 
 
-            String l = "?lat=12.124124&lng=12.344345";
+        String l = "?lat=12.124124&lng=12.344345";
         try {
             // Simulate network access.
-            Response response = get("https://mccg15.herokuapp.com/application"+l);
+            Response response = get("https://mccg15.herokuapp.com/application" + l);
             int code = response.code();
             if (code == 200) {
                 Toast.makeText(MainActivity.this, "success", Toast.LENGTH_LONG).show();
-            } else if (code == 401) {
+            } else {
                 Toast.makeText(MainActivity.this, "Code: 401", Toast.LENGTH_LONG).show();
             }
         } catch (Exception i) {
-            Toast.makeText(MainActivity.this, "FAILURE", Toast.LENGTH_LONG).show();
+            //Toast.makeText(MainActivity.this, "FAILURE", Toast.LENGTH_LONG).show();
+            i.printStackTrace();
         }
 
     }
 
-
     Response get(String url) throws IOException {
         Request request = new Request.Builder()
                 .url(url)
-                .addHeader("Authorization", "\""+mToken+"\"")
+                .addHeader("Authorization", mToken )
                 .build();
         Response response = client.newCall(request).execute();
         return response;

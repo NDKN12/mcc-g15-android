@@ -292,7 +292,6 @@ public  class LoginActivity extends AppCompatActivity implements GoogleApiClient
                 return false;
             }
 
-            // TODO: register the new account here.
             return true;
         }
 
@@ -304,9 +303,6 @@ public  class LoginActivity extends AppCompatActivity implements GoogleApiClient
             if (success) {
                 Intent i = new Intent(LoginActivity.this, MainActivity.class);
                 i.putExtra("token", mToken);
-
-
-
                 startActivity(i);
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
