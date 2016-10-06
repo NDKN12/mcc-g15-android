@@ -67,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
     Response get(String url) throws IOException {
         Request request = new Request.Builder()
                 .url(url)
+
                 .addHeader("Authorization", mToken )
                 .build();
         Response response = client.newCall(request).execute();
