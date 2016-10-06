@@ -8,9 +8,23 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Toast;
 
+import java.io.IOException;
+
+import okhttp3.Headers;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.internal.framed.Header;
+
 public class MainActivity extends AppCompatActivity {
 
     private String mToken;
+    public static final MediaType JSON
+            = MediaType.parse("application/json; charset=utf-8");
+    OkHttpClient client = new OkHttpClient();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,8 +42,39 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
         mToken = getIntent().getStringExtra("token");
-        Toast.makeText(MainActivity.this, mToken, Toast.LENGTH_LONG).show();
+        Toast.makeText(MainActivity.this, mToken, Toast.LENGTH_SHORT).show();
+
+
+        String login_body = "{\"lat\" : \"" + "..." + "\", \"long\":\"" + "..." + "\"}";
+        try {
+            // Simulate network access.
+            Response response = post("https://mccg15.herokuapp.com/application/list", login_body);
+            int code = response.code();
+            if (code == 200) {
+                Toast.makeText(MainActivity.this, "success", Toast.LENGTH_LONG).show();
+            } else if (code == 401) {
+                Toast.makeText(MainActivity.this, "Code: 401", Toast.LENGTH_LONG).show();
+            }
+        } catch (Exception i) {
+            Toast.makeText(MainActivity.this, "FAILURE", Toast.LENGTH_LONG).show();
+        }
+
     }
+
+
+    Response post(String url, String json) throws IOException {
+        RequestBody body = RequestBody.create(JSON, json);
+
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("token", mToken.toString())
+                .post(body)
+                .build();
+        Response response = client.newCall(request).execute();
+        return response;
+    }
+
 
 }
