@@ -35,12 +35,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +51,7 @@ import static android.Manifest.permission.READ_CONTACTS;
 /**
  * A login screen that offers login via email/password.
  */
-public  class LoginActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener{
+public  class LoginActivity extends AppCompatActivity {
 
     public static final MediaType JSON
             = MediaType.parse("application/json; charset=utf-8");
@@ -81,8 +76,7 @@ public  class LoginActivity extends AppCompatActivity implements GoogleApiClient
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
-    private GoogleApiClient mGoogleApiClient;
-    private LocationRequest mLocationRequest;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -106,15 +100,6 @@ public  class LoginActivity extends AppCompatActivity implements GoogleApiClient
         });
 
 
-
-        // Create an instance of GoogleAPIClient.
-        if (mGoogleApiClient == null) {
-            mGoogleApiClient = new GoogleApiClient.Builder(this)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .addApi(LocationServices.API)
-                    .build();
-        }
 
         Button mUsernameSignInButton = (Button) findViewById(R.id.email_sign_in_button);
         mUsernameSignInButton.setOnClickListener(new OnClickListener() {
@@ -237,26 +222,6 @@ public  class LoginActivity extends AppCompatActivity implements GoogleApiClient
                 .build();
         Response response = client.newCall(request).execute();
         return response;
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-
     }
 
     /**
