@@ -168,12 +168,10 @@ public  class LoginActivity extends AppCompatActivity {
     }
 
     private boolean isUsernameValid(String username) {
-        //TODO: Replace this with your own logic
         return username.length() > 4;
     }
 
     private boolean isPasswordValid(String password) {
-        //TODO: Replace this with your own logic
         return password.length() > 4;
     }
 
@@ -254,6 +252,7 @@ public  class LoginActivity extends AppCompatActivity {
                     return false;
                 }
             } catch (Exception i) {
+
                 return false;
             }
 
@@ -266,6 +265,7 @@ public  class LoginActivity extends AppCompatActivity {
             showProgress(false);
 
             if (success) {
+                Toast.makeText(LoginActivity.this, "Success!", Toast.LENGTH_SHORT).show();
                 Intent i = new Intent(LoginActivity.this, MainActivity.class);
                 i.putExtra("token", mToken);
                 startActivity(i);

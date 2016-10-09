@@ -1,5 +1,6 @@
 package fi.aalto.openoranges.project1.mcc;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import android.content.pm.PackageManager;
@@ -19,19 +20,14 @@ import java.io.IOException;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 
-import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.RequestBody;
 import okhttp3.Response;
-import okhttp3.internal.framed.Header;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
@@ -43,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public static final MediaType JSON
             = MediaType.parse("application/json; charset=utf-8");
     OkHttpClient client = new OkHttpClient();
-
+    private ApplicationList mAppList = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,46 +56,93 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     .addApi(LocationServices.API)
                     .build();
         }
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-
 
         mToken = getIntent().getStringExtra("token");
-       // Toast.makeText(MainActivity.this, mToken, Toast.LENGTH_SHORT).show();
+      // Toast.makeText(MainActivity.this, mToken, Toast.LENGTH_SHORT).show();
 
-
-        String l = "?lat=12.124124&lng=12.344345";
-        try {
-            // Simulate network access.
-            Response response = get("https://mccg15.herokuapp.com/application" + l);
-            int code = response.code();
-            if (code == 200) {
-                Toast.makeText(MainActivity.this, "success", Toast.LENGTH_LONG).show();
-            } else {
-                Toast.makeText(MainActivity.this, "Code: 401", Toast.LENGTH_LONG).show();
-            }
-        } catch (Exception i) {
-            //Toast.makeText(MainActivity.this, "FAILURE", Toast.LENGTH_LONG).show();
-            i.printStackTrace();
-        }
-
+        mAppList = new ApplicationList("test","test");
+        mAppList.execute((Void) null);
     }
 
-    Response get(String url) throws IOException {
+   public Response getList(String url) throws IOException {
+       return get(url);
+    }
+    public Response get(String url) throws IOException {
         Request request = new Request.Builder()
                 .url(url)
-
                 .addHeader("Authorization", mToken )
                 .build();
         Response response = client.newCall(request).execute();
         return response;
     }
+
+
+    /**
+     * Represents an asynchronous login/registration task used to authenticate
+     * the user.
+     */
+    public class ApplicationList extends AsyncTask<Void, Void, Boolean> {
+
+        private final String mLatitude;
+        private final String mLongitude;
+        private String mToken;
+
+       ApplicationList(String latitude, String longitude) {
+            mLatitude = latitude;
+            mLongitude = longitude;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            String l = "?lat=12.124124&lng=12.344345";
+            // TODO: attempt authentication against a network service.
+            try {
+                // Simulate network access.
+                Response response = getList("https://mccg15.herokuapp.com/application" + l);
+                int code = response.code();
+                if (code == 200) {
+                    Toast.makeText(MainActivity.this, "success", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "Code: 401", Toast.LENGTH_LONG).show();
+                }
+            } catch (Exception i) {
+                //Toast.makeText(MainActivity.this, "FAILURE", Toast.LENGTH_LONG).show();
+                i.printStackTrace();
+            }
+
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            mAppList = null;
+
+            if (success) {
+                Toast.makeText(MainActivity.this, "ApplicationList Success!", Toast.LENGTH_SHORT).show();
+            } else {
+
+                Toast.makeText(MainActivity.this, "Wrong Password!", Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            mAppList = null;
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     @Override
     protected void onStart() {
