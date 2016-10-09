@@ -104,10 +104,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     Toast.makeText(MainActivity.this, "success", Toast.LENGTH_LONG).show();
                 } else {
                     Toast.makeText(MainActivity.this, "Code: 401", Toast.LENGTH_LONG).show();
+                    return false;
                 }
             } catch (Exception i) {
                 //Toast.makeText(MainActivity.this, "FAILURE", Toast.LENGTH_LONG).show();
                 i.printStackTrace();
+                Toast.makeText(MainActivity.this, "hallo"+i.getMessage(), Toast.LENGTH_LONG).show();
+                return false;
             }
 
             return true;
@@ -120,8 +123,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             if (success) {
                 Toast.makeText(MainActivity.this, "ApplicationList Success!", Toast.LENGTH_SHORT).show();
             } else {
-
-                Toast.makeText(MainActivity.this, "Wrong Password!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "ApplicationList Failure!", Toast.LENGTH_SHORT).show();
             }
         }
 

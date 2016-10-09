@@ -265,7 +265,7 @@ public  class LoginActivity extends AppCompatActivity {
             showProgress(false);
 
             if (success) {
-                Toast.makeText(LoginActivity.this, "Success!", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(LoginActivity.this, "Success!", Toast.LENGTH_SHORT).show();
                 Intent i = new Intent(LoginActivity.this, MainActivity.class);
                 i.putExtra("token", mToken);
                 startActivity(i);
