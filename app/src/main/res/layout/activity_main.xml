@@ -9,27 +9,23 @@
     android:fitsSystemWindows="true"
     tools:context="fi.aalto.openoranges.project1.mcc.MainActivity">
 
-    <RelativeLayout
+    <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorPrimary"
+        android:theme="@style/AppTheme.AppBarOverlay">
 
-        <android.support.design.widget.AppBarLayout
-            android:id="@+id/AppBar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/colorPrimary"
-            android:theme="@style/AppTheme.AppBarOverlay">
+        <Button
+            android:id="@+id/logout"
+            android:text="Logout"
+            android:background="@color/colorAccent"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:textStyle="bold"
+            android:layout_gravity="right" />
+        />
 
-
-            <Button
-                android:id="@+id/logout"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:background="@color/colorAccent"
-                android:text="Logout"
-                android:textStyle="bold" />
-        </android.support.design.widget.AppBarLayout>
+    </android.support.design.widget.AppBarLayout>
 
         <ListView
             android:id="@+id/oo_AppsListView"
