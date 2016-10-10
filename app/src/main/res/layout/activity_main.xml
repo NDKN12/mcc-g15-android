@@ -14,12 +14,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-    <android.support.design.widget.AppBarLayout
-        android:id="@+id/AppBar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/colorPrimary"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        <android.support.design.widget.AppBarLayout
+            android:id="@+id/AppBar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/colorPrimary"
+            android:theme="@style/AppTheme.AppBarOverlay">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -54,13 +54,13 @@
 
         </LinearLayout>
 
-    </android.support.design.widget.AppBarLayout>
+        </android.support.design.widget.AppBarLayout>
 
-    <ListView
-        android:id="@+id/oo_AppsListView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/AppBar" />
+        <ListView
+            android:id="@+id/oo_AppsListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/AppBar" />
 
     <TextView
         android:id="@+id/textView"
@@ -69,14 +69,14 @@
         android:layout_below="@id/AppBar"
         android:text="TextView" />
 
-    <include
-        android:id="@+id/include"
-        layout="@layout/content_main"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true" />
+        <include
+            android:id="@+id/include"
+            layout="@layout/content_main"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true" />
 
 
 </RelativeLayout>
