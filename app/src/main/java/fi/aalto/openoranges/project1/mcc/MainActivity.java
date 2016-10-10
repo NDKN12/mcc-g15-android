@@ -20,12 +20,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationListener;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -47,6 +52,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private double mLatitude;
     private double mLongtitude;
     private TextView mTextView;
+    private TextView mListTextView;
+    private String mListeTest = "void";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,11 +75,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // Toast.makeText(MainActivity.this, mToken, Toast.LENGTH_SHORT).show();
 
         mTextView = (TextView) findViewById(R.id.textView);
+        mListTextView = (TextView) findViewById(R.id.Liste);
+
 
         mAppList = new ApplicationList("test", "test");
+        mListTextView.setText(mListeTest);
         mAppList.execute((Void) null);
 
-        // Toast.makeText(MainActivity.this, (int) mLatitude, Toast.LENGTH_SHORT).show();
     }
 
     public Response getList(String url) throws IOException {
@@ -107,13 +116,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         @Override
         protected Boolean doInBackground(Void... params) {
             String l = "?lat=12.124124&lng=12.344345";
+
             // TODO: attempt authentication against a network service.
             try {
                 // Simulate network access.
                 Response response = getList("https://mccg15.herokuapp.com/application" + l);
                 int code = response.code();
                 if (code == 200) {
-                    Toast.makeText(MainActivity.this, "success", Toast.LENGTH_LONG).show();
+                    mListeTest = response.body().string().toString();
+                    Toast.makeText(MainActivity.this, mListeTest, Toast.LENGTH_LONG).show();
                 } else {
                     Toast.makeText(MainActivity.this, "Code: 401", Toast.LENGTH_LONG).show();
                     return false;
@@ -131,9 +142,37 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         @Override
         protected void onPostExecute(final Boolean success) {
             mAppList = null;
-
+            ArrayList<JSONObject> arrays = null;
             if (success) {
-                Toast.makeText(MainActivity.this, "ApplicationList Success!", Toast.LENGTH_SHORT).show();
+
+                mListeTest = "{'apps': " + mListeTest + "}";
+                try {
+                    JSONObject myjson = new JSONObject(mListeTest);
+                    JSONArray the_json_array = myjson.getJSONArray("apps");
+                    int size = the_json_array.length();
+                     arrays = new ArrayList<JSONObject>();
+                    for (int i = 0; i < size; i++) {
+                        JSONObject another_json_object = the_json_array.getJSONObject(i);
+                        //Blah blah blah...
+                        arrays.add(another_json_object);
+                    }
+
+                    JSONObject[] jsons = new JSONObject[arrays.size()];
+                    arrays.toArray(jsons);
+
+
+
+                    //  JSONObject   myjson = new JSONObject(mListeTest);
+                    //  JSONArray nameArray = myjson.names();
+                    //  JSONArray valArray = myjson.toJSONArray(nameArray);
+                    //  for (int i = 0; i < valArray.length(); i++) {
+                    //    String p = nameArray.getString(i) + "," + valArray.getString(i);
+                    //     Log.i("p", p);
+                    // }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                Toast.makeText(MainActivity.this, arrays.get(0).keys().toString(), Toast.LENGTH_LONG).show();
             } else {
                 Toast.makeText(MainActivity.this, "ApplicationList Failure!", Toast.LENGTH_SHORT).show();
             }
