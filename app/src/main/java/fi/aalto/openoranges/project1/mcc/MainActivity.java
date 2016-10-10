@@ -92,9 +92,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mAppList = new ApplicationList("test", "test");
         mAppList.execute((Void) null);
 
-      //  populateAppList();
-        Toast.makeText(MainActivity.this, myApps.get(0).getId(), Toast.LENGTH_SHORT).show();
-        Toast.makeText(MainActivity.this, myApps.get(0).getId(), Toast.LENGTH_SHORT).show();
+
         // populateListView();
     }
 
@@ -233,9 +231,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
 
-        protected void onPostExecute(ArrayList<JSONObject> success) {
+        protected void onPostExecute(ArrayList<JSONObject> liste) {
             mAppList = null;
-            arrays = success;
+            arrays = liste;
+           // populateAppList();
+           // populateListView();
         }
 
         @Override
