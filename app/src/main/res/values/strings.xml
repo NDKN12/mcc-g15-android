@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MCC</string>
+    <string name="app_name">OpenOrange</string>
 
     <!-- Strings related to login -->
     <string name="prompt_username">Username</string>
