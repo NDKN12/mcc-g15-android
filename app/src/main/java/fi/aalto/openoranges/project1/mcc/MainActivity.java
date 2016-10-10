@@ -8,12 +8,15 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.widget.TextViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.support.v4.app.ActivityCompat;
 import android.location.Location;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -34,12 +37,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private String mToken;
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
-    private Location mLastLocation;
+
     private static final String LOG_TAG = "MainActivity";
     public static final MediaType JSON
             = MediaType.parse("application/json; charset=utf-8");
     OkHttpClient client = new OkHttpClient();
     private ApplicationList mAppList = null;
+
+    private double mLatitude;
+    private double mLongtitude;
+    private TextView mTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,19 +65,24 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         mToken = getIntent().getStringExtra("token");
-      // Toast.makeText(MainActivity.this, mToken, Toast.LENGTH_SHORT).show();
+        // Toast.makeText(MainActivity.this, mToken, Toast.LENGTH_SHORT).show();
 
-        mAppList = new ApplicationList("test","test");
+        mTextView = (TextView) findViewById(R.id.textView);
+
+        mAppList = new ApplicationList("test", "test");
         mAppList.execute((Void) null);
+
+        // Toast.makeText(MainActivity.this, (int) mLatitude, Toast.LENGTH_SHORT).show();
     }
 
-   public Response getList(String url) throws IOException {
-       return get(url);
+    public Response getList(String url) throws IOException {
+        return get(url);
     }
+
     public Response get(String url) throws IOException {
         Request request = new Request.Builder()
                 .url(url)
-                .addHeader("Authorization", mToken )
+                .addHeader("Authorization", mToken)
                 .build();
         Response response = client.newCall(request).execute();
         return response;
@@ -87,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         private final String mLongitude;
         private String mToken;
 
-       ApplicationList(String latitude, String longitude) {
+        ApplicationList(String latitude, String longitude) {
             mLatitude = latitude;
             mLongitude = longitude;
         }
@@ -109,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             } catch (Exception i) {
                 //Toast.makeText(MainActivity.this, "FAILURE", Toast.LENGTH_LONG).show();
                 i.printStackTrace();
-                Toast.makeText(MainActivity.this, "hallo"+i.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, "hallo" + i.getMessage(), Toast.LENGTH_LONG).show();
                 return false;
             }
 
@@ -134,18 +146,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
     @Override
     protected void onStart() {
         super.onStart();
@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     public void onConnected(@Nullable Bundle bundle) {
 
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
             //    ActivityCompat#requestPermissions
             // here to request the missing permissions, and then overriding
@@ -196,6 +196,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     public void onLocationChanged(Location location) {
         Log.i(LOG_TAG, location.toString());
+        mTextView.setText(location.toString());
+        mLatitude = location.getLatitude();
+        mLongtitude = location.getLongitude();
     }
 
 }
