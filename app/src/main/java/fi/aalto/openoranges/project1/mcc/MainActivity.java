@@ -234,8 +234,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         protected void onPostExecute(ArrayList<JSONObject> liste) {
             mAppList = null;
             arrays = liste;
-           // populateAppList();
-           // populateListView();
+            //populateAppList();
+            // populateListView();
         }
 
         @Override

@@ -51,20 +51,13 @@ import static android.Manifest.permission.READ_CONTACTS;
 /**
  * A login screen that offers login via email/password.
  */
-public  class LoginActivity extends AppCompatActivity {
+public  class  LoginActivity extends AppCompatActivity {
 
     public static final MediaType JSON
             = MediaType.parse("application/json; charset=utf-8");
 
     OkHttpClient client = new OkHttpClient();
 
-    /**
-     * A dummy authentication store containing known user names and passwords.
-     * TODO: remove after connecting to a real authentication system.
-     */
-    private static final String[] DUMMY_CREDENTIALS = new String[]{
-            "peterpan", "dreamis"
-    };
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
@@ -241,7 +234,7 @@ public  class LoginActivity extends AppCompatActivity {
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
 
-            String login_body = "{\"username\" : \"" + mUsername + "\", \"password\":\"" + mPassword + "\"}";
+            String login_body = "{\"username\":\"" + mUsername + "\",\"password\":\"" + mPassword + "\"}";
             try {
                 // Simulate network access.
                 Response response = post("https://mccg15.herokuapp.com/users/login", login_body);
@@ -252,7 +245,7 @@ public  class LoginActivity extends AppCompatActivity {
                     return false;
                 }
             } catch (Exception i) {
-
+i.printStackTrace();
                 return false;
             }
 
