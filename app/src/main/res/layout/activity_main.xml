@@ -22,18 +22,25 @@
     </android.support.design.widget.AppBarLayout>
 
 
-
-    <include layout="@layout/content_main"
-        android:id="@+id/include" />
-
     <TextView
-
-        android:text="TextView"
+        android:text="halloTest"
+        android:layout_width="84dp"
+        android:layout_height="76dp"
+        android:id="@+id/Liste"
+        app:layout_anchor="@+id/include"
+        app:layout_anchorGravity="center_vertical|center_horizontal"
+        android:layout_gravity="center_vertical|center_horizontal" />
+    <TextView
+        android:text=""
         android:layout_width="84dp"
         android:layout_height="76dp"
         android:id="@+id/textView"
         app:layout_anchor="@+id/include"
         app:layout_anchorGravity="center_vertical|center_horizontal"
         android:layout_gravity="center_vertical|center_horizontal" />
+
+    <include layout="@layout/content_main"
+        android:id="@+id/include" />
+
 
 </android.support.design.widget.CoordinatorLayout>
