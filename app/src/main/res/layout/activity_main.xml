@@ -62,31 +62,20 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/AppBar" />
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/AppBar"
-        android:text="TextView" />
-
-        <include
-            android:id="@+id/include"
-            layout="@layout/content_main"
+        <TextView
+            android:id="@+id/textView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true" />
+            android:layout_below="@id/AppBar" />
 
+        <ProgressBar
+            android:id="@+id/logout_progress"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/AppBar"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone" />
 
-</RelativeLayout>
-
-    <ProgressBar
-        android:id="@+id/logout_progress"
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="193dp"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/AppBar"
-        android:visibility="gone" />
-
+    </RelativeLayout>
 </LinearLayout>

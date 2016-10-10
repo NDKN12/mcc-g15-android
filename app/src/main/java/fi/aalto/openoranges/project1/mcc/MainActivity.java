@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -55,9 +56,12 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import static android.R.attr.fragment;
+
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     private String mToken;
+    private int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION;
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
 
@@ -271,13 +275,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
 
+    //Location services
     @Override
     protected void onStart() {
         super.onStart();
         //Connect the client
         mGoogleApiClient.connect();
-
-
     }
 
     @Override
@@ -285,29 +288,65 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         //Disconnect the client
         mGoogleApiClient.disconnect();
         super.onStop();
-
     }
 
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+                // Show an expanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+
+            } else {
+
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this,new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+            }
+
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
+            Toast.makeText(MainActivity.this, "No location permission!", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        //Identifying location update parameters
         mLocationRequest = LocationRequest.create();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mLocationRequest.setInterval(1000); // Update location every second
 
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        if(mLocationRequest != null) {
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+            showProgress(false);
+        }
+        else {
+            showProgress(true);
+        }
+
+        }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION) {
+            for (int i = 0; i < permissions.length; i++) {
+                String permission = permissions[i];
+                int grantResult = grantResults[i];
+
+                if (permission.equals(android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    if (grantResult == PackageManager.PERMISSION_GRANTED) {
+                        //Identifying location update parameters
+
+                    } else {
+                        ActivityCompat.requestPermissions(this,new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+                    }
+                }
+            }
+        }
     }
 
     @Override
