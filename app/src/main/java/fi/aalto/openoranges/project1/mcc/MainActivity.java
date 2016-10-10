@@ -2,10 +2,15 @@ package fi.aalto.openoranges.project1.mcc;
 
 import android.*;
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.annotation.TargetApi;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 
 import android.content.pm.PackageManager;
@@ -13,12 +18,14 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.support.v4.app.ActivityCompat;
 import android.location.Location;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -66,6 +73,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private ArrayList<JSONObject> arrays = null;
     private List<Application> myApps = new ArrayList<Application>();
 
+    /**
+     * Keep track of the login task to ensure we can cancel it if requested.
+     */
+    private UserLogoutTask mAuthTask = null;
+    private View mProgressView;
+    private View mListView;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,7 +108,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mAppList.execute((Void) null);
 
 
+        Button logoutButton = (Button) findViewById(R.id.logout);
+        logoutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                attemptLogout();
+            }
+        });
+
         // populateListView();
+        //mListView = findViewById(R.id.oo_AppsListView);
+        mListView = findViewById(R.id.textView);
+        mProgressView = findViewById(R.id.logout_progress);
     }
 
     private void populateListView() {
@@ -300,4 +326,117 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mTextView.setText(location.toString());
     }
 
+
+    //Logout activity
+    private void attemptLogout() {
+        if (mAuthTask != null) {
+            return;
+        }
+
+
+        boolean cancel = false;
+        View focusView = null;
+
+        showProgress(true);
+        mAuthTask = new UserLogoutTask();
+        mAuthTask.execute((Void) null);
+
+
+    }
+
+    public Response post(String url) throws IOException {
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("Authorization", mToken)
+                .build();
+        return client.newCall(request).execute();
+    }
+
+    /**
+     * Shows the progress UI and hides the login form.
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+    private void showProgress(final boolean show) {
+        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
+        // for very easy animations. If available, use these APIs to fade-in
+        // the progress spinner.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+            mListView.setVisibility(show ? View.GONE : View.VISIBLE);
+            mListView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mListView.setVisibility(show ? View.GONE : View.VISIBLE);
+                }
+            });
+
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mProgressView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+                }
+            });
+        } else {
+            // The ViewPropertyAnimator APIs are not available, so simply show
+            // and hide the relevant UI components.
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mListView.setVisibility(show ? View.GONE : View.VISIBLE);
+        }
+    }
+
+    /**
+     * Represents an asynchronous login/registration task used to authenticate
+     * the user.
+     */
+    public class UserLogoutTask extends AsyncTask<Void, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            // TODO: attempt authentication against a network service.
+
+            try {
+                // Simulate network access.
+                Response response = post("https://mccg15.herokuapp.com/users/logout");
+                int code = response.code();
+                if (code == 200) {
+
+                } else {
+                    return false;
+                }
+            } catch (Exception i) {
+
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            mAuthTask = null;
+            showProgress(false);
+
+            if (success) {
+                Toast.makeText(MainActivity.this, "Logout successfully!", Toast.LENGTH_SHORT).show();
+                Intent i = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(i);
+            } else {
+                Toast.makeText(MainActivity.this, "Logout failed!", Toast.LENGTH_SHORT).show();
+
+                //TESTING
+                Intent i = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(i);
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            mAuthTask = null;
+            showProgress(false);
+        }
+    }
 }
