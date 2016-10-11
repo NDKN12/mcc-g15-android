@@ -29,4 +29,17 @@ dependencies {
     compile 'com.android.support:design:24.2.1'
     compile 'com.google.android.gms:play-services:9.6.1'
     testCompile 'junit:junit:4.12'
+    compile 'com.facebook.fresco:fresco:0.14.1'
+    // If your app supports Android versions before Ice Cream Sandwich (API level 14)
+    compile 'com.facebook.fresco:animated-base-support:0.14.1'
+
+    // For animated GIF support
+    compile 'com.facebook.fresco:animated-gif:0.14.1'
+
+    // For WebP support, including animated WebP
+    compile 'com.facebook.fresco:animated-webp:0.14.1'
+    compile 'com.facebook.fresco:webpsupport:0.14.1'
+
+    // For WebP support, without animations
+    compile 'com.facebook.fresco:webpsupport:0.14.1'
 }

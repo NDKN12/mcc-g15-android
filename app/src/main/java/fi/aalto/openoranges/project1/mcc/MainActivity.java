@@ -1,7 +1,6 @@
 package fi.aalto.openoranges.project1.mcc;
 
-import android.*;
-import android.Manifest;
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
@@ -16,10 +15,8 @@ import android.os.Bundle;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.util.Log;
 import android.support.v4.app.ActivityCompat;
 import android.location.Location;
@@ -41,6 +38,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.drawee.view.SimpleDraweeView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
@@ -55,8 +54,6 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-
-import static android.R.attr.fragment;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
@@ -89,7 +86,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Fresco.initialize(this);
         setContentView(R.layout.activity_main);
+
+
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         mListView = findViewById(R.id.oo_AppsListView);
@@ -147,10 +148,24 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 itemView = getLayoutInflater().inflate(R.layout.item_view, parent, false);
             //find app to work with
             Application currentApp = myApps.get(position);
+
             //Fill the view
-            ImageView imageView = (ImageView) itemView.findViewById(R.id.imageView);
-            imageView.setImageResource(R.drawable.cast_album_art_placeholder);
-            // imageView.setImageBitmap(getImageBitmap(currentApp.getIcon_url()));
+
+            Uri uri = Uri.parse(currentApp.getIcon_url());
+            SimpleDraweeView draweeView = (SimpleDraweeView) findViewById(R.id.imageView);
+           try{ draweeView.setImageURI(uri);}
+           catch(Exception i){
+               i.printStackTrace();
+           }
+
+
+            //Fill the textview with the name of the app
+            TextView nameText = (TextView) itemView.findViewById(R.id.nameText);
+            nameText.setText(currentApp.getName());
+
+            //Fill the textview with the description of the app
+            //TextView descriptionText = (TextView) itemView.findViewById(R.id.nameText);
+            //descriptionText.setText(currentApp.getDescription());
             return itemView;
         }
     }
@@ -268,11 +283,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         protected void onPostExecute(ArrayList<JSONObject> liste) {
             mAppList = null;
             arrays = liste;
-            try {
-                mTextView.setText(arrays.get(0).getString("name"));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
             populateAppList();
         }
 
