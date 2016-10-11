@@ -83,7 +83,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private UserLogoutTask mAuthTask = null;
     private View mProgressView;
     private View mListView;
-
+    private String mLatitude;
+    private String mLongtitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +92,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        mListView = findViewById(R.id.oo_AppsListView);
+        mProgressView = findViewById(R.id.logout_progress);
         // Create an instance of GoogleAPIClient.
         if (mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -120,10 +122,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
 
-        // populateListView();
-        //mListView = findViewById(R.id.oo_AppsListView);
-        mListView = findViewById(R.id.textView);
-        mProgressView = findViewById(R.id.logout_progress);
+
+        //mListView = findViewById(R.id.textView);
+
     }
 
     private void populateListView() {
@@ -147,8 +148,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             //find app to work with
             Application currentApp = myApps.get(position);
             //Fill the view
-            ImageView imageView = (ImageView) itemView.findViewById(R.id.mr_volume_item_icon);
-            imageView.setImageBitmap(getImageBitmap(currentApp.getIcon_url()));
+            ImageView imageView = (ImageView) itemView.findViewById(R.id.imageView);
+            imageView.setImageResource(R.drawable.cast_album_art_placeholder);
+            // imageView.setImageBitmap(getImageBitmap(currentApp.getIcon_url()));
             return itemView;
         }
     }
@@ -186,6 +188,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
             myApps.add(new Application(name, id, icon_url, description));
         }
+        populateListView();
     }
 
     public Response getList(String url) throws IOException {
@@ -217,10 +220,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         @Override
         protected ArrayList<JSONObject> doInBackground(Void... params) {
+            while (mLatitude == null && mLongitude == null) {
 
-            String lat = "12.124124";
-            String lng = "12.344345";
-            String l = "?lat=" + lat + "&lng=" + lng;
+            }
+            // String lat = "12.124124";
+            // String lng = "12.344345";
+            String l = "?lat=" + mLatitude + "&lng=" + mLongitude;
 
             try {
                 // Simulate network access.
@@ -239,7 +244,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                             arrays.add(another_json_object);
                         }
-
                         JSONObject[] jsons = new JSONObject[arrays.size()];
                         arrays.toArray(jsons);
                         return arrays;
@@ -264,8 +268,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         protected void onPostExecute(ArrayList<JSONObject> liste) {
             mAppList = null;
             arrays = liste;
-            //populateAppList();
-            // populateListView();
+            try {
+                mTextView.setText(arrays.get(0).getString("name"));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            populateAppList();
         }
 
         @Override
@@ -305,7 +313,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             } else {
 
                 // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(this,new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+                ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
             }
 
             // to handle the case where the user grants the permission. See the documentation
@@ -318,15 +326,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         mLocationRequest.setInterval(1000); // Update location every second
 
-        if(mLocationRequest != null) {
+        if (mLocationRequest != null) {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
             showProgress(false);
-        }
-        else {
+        } else {
             showProgress(true);
         }
 
-        }
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
@@ -342,7 +349,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         //Identifying location update parameters
 
                     } else {
-                        ActivityCompat.requestPermissions(this,new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+                        ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
                     }
                 }
             }
@@ -362,7 +369,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     public void onLocationChanged(Location location) {
         Log.i(LOG_TAG, location.toString());
-        mTextView.setText(location.toString());
+        mLatitude = String.valueOf(location.getLatitude());
+        mLongtitude = String.valueOf(location.getLongitude());
     }
 
 
