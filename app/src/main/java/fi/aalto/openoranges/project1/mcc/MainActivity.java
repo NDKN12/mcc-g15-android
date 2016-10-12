@@ -5,8 +5,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -24,16 +22,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,7 +74,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private View mProgressView;
     private View mListView;
     private String mLatitude;
-    private String mLongtitude;
+    private String mLongitude;
+    private String mUsedLatitude;
+    private String mUsedLongitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,12 +84,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         Fresco.initialize(this);
         setContentView(R.layout.activity_main);
 
-
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
         mListView = findViewById(R.id.oo_AppsListView);
         mProgressView = findViewById(R.id.logout_progress);
+
         // Create an instance of GoogleAPIClient.
         if (mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -110,10 +105,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mTextView = (TextView) findViewById(R.id.textView);
         // mListTextView = (TextView) findViewById(R.id.Liste);
 
-
-        mAppList = new ApplicationList("test", "test");
+        mAppList = new ApplicationList();
         mAppList.execute((Void) null);
-
 
         Button logoutButton = (Button) findViewById(R.id.logout);
         logoutButton.setOnClickListener(new View.OnClickListener() {
@@ -150,13 +143,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             Application currentApp = myApps.get(position);
 
             //Fill the view
-
             Uri uri = Uri.parse(currentApp.getIcon_url());
-            SimpleDraweeView draweeView = (SimpleDraweeView) findViewById(R.id.imageView);
-           try{ draweeView.setImageURI(uri);}
-           catch(Exception i){
-               i.printStackTrace();
-           }
+            SimpleDraweeView draweeView = (SimpleDraweeView) itemView.findViewById(R.id.imageView);
+            try {
+                draweeView.setImageURI(uri);
+            } catch (Exception i) {
+                i.printStackTrace();
+            }
 
 
             //Fill the textview with the name of the app
@@ -170,22 +163,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    private Bitmap getImageBitmap(String url) {
-        Bitmap bm = null;
-        try {
-            URL aURL = new URL(url);
-            URLConnection conn = aURL.openConnection();
-            conn.connect();
-            InputStream is = conn.getInputStream();
-            BufferedInputStream bis = new BufferedInputStream(is);
-            bm = BitmapFactory.decodeStream(bis);
-            bis.close();
-            is.close();
-        } catch (IOException e) {
-            Log.e("tag", "Error getting bitmap", e);
-        }
-        return bm;
-    }
 
     private void populateAppList() {
         for (int j = 0; j < arrays.size(); j++) {
@@ -203,6 +180,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
             myApps.add(new Application(name, id, icon_url, description));
         }
+        showProgress(false);
         populateListView();
     }
 
@@ -225,23 +203,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      */
     public class ApplicationList extends AsyncTask<Void, Void, ArrayList<JSONObject>> {
 
-        private final String mLatitude;
-        private final String mLongitude;
-
-        ApplicationList(String latitude, String longitude) {
-            mLatitude = latitude;
-            mLongitude = longitude;
-        }
-
         @Override
         protected ArrayList<JSONObject> doInBackground(Void... params) {
-            while (mLatitude == null && mLongitude == null) {
+
+            while (mLatitude == null || mLongitude == null) {
 
             }
             // String lat = "12.124124";
             // String lng = "12.344345";
             String l = "?lat=" + mLatitude + "&lng=" + mLongitude;
-
+            mUsedLatitude = mLatitude;
+            mUsedLongitude = mLongitude;
+            Toast.makeText(MainActivity.this, mLatitude, Toast.LENGTH_LONG).show();
             try {
                 // Simulate network access.
                 Response response = getList("https://mccg15.herokuapp.com/application" + l);
@@ -275,7 +248,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 Toast.makeText(MainActivity.this, "hallo" + i.getMessage(), Toast.LENGTH_LONG).show();
                 return null;
             }
-
             return arrays;
         }
 
@@ -284,6 +256,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mAppList = null;
             arrays = liste;
             populateAppList();
+
         }
 
         @Override
@@ -297,8 +270,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onStart() {
         super.onStart();
+        showProgress(true);
         //Connect the client
         mGoogleApiClient.connect();
+
     }
 
     @Override
@@ -314,17 +289,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_FINE_LOCATION)) {
 
-                // Show an expanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
-            } else {
-
-                // No explanation needed, we can request the permission.
-                ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-            }
+            // No explanation needed, we can request the permission.
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
 
             // to handle the case where the user grants the permission. See the documentation
             // for ActivityCompat#requestPermissions for more details.
@@ -338,11 +305,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         if (mLocationRequest != null) {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-            showProgress(false);
-        } else {
-            showProgress(true);
         }
-
     }
 
     @Override
@@ -380,7 +343,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onLocationChanged(Location location) {
         Log.i(LOG_TAG, location.toString());
         mLatitude = String.valueOf(location.getLatitude());
-        mLongtitude = String.valueOf(location.getLongitude());
+        mLongitude = String.valueOf(location.getLongitude());
+        Toast.makeText(MainActivity.this, mLongitude, Toast.LENGTH_SHORT).show();
     }
 
 
@@ -397,8 +361,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         showProgress(true);
         mAuthTask = new UserLogoutTask();
         mAuthTask.execute((Void) null);
-
-
     }
 
     public Response post(String url) throws IOException {

@@ -51,7 +51,7 @@ import static android.Manifest.permission.READ_CONTACTS;
 /**
  * A login screen that offers login via email/password.
  */
-public  class  LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity {
 
     public static final MediaType JSON
             = MediaType.parse("application/json; charset=utf-8");
@@ -91,7 +91,6 @@ public  class  LoginActivity extends AppCompatActivity {
                 return false;
             }
         });
-
 
 
         Button mUsernameSignInButton = (Button) findViewById(R.id.email_sign_in_button);
@@ -245,7 +244,7 @@ public  class  LoginActivity extends AppCompatActivity {
                     return false;
                 }
             } catch (Exception i) {
-i.printStackTrace();
+                i.printStackTrace();
                 return false;
             }
 

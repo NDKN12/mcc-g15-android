@@ -17,7 +17,6 @@
         android:contentDescription="Icon Image"
         android:maxHeight="80dp"
         android:maxWidth="80dp"
-        app:srcCompat="@mipmap/ic_launcher"
         fresco:placeholderImage="@drawable/icon_black" />
 
     <TextView
