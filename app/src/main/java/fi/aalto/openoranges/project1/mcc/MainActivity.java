@@ -105,8 +105,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mTextView = (TextView) findViewById(R.id.textView);
         // mListTextView = (TextView) findViewById(R.id.Liste);
 
-        mAppList = new ApplicationList();
-        mAppList.execute((Void) null);
 
         Button logoutButton = (Button) findViewById(R.id.logout);
         logoutButton.setOnClickListener(new View.OnClickListener() {
@@ -165,6 +163,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
 
     private void populateAppList() {
+        myApps = new ArrayList<>();
         for (int j = 0; j < arrays.size(); j++) {
             String name = null;
             String id = null;
@@ -262,6 +261,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         @Override
         protected void onCancelled() {
             mAppList = null;
+
         }
     }
 
@@ -273,7 +273,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         showProgress(true);
         //Connect the client
         mGoogleApiClient.connect();
-
+        mAppList = new ApplicationList();
+        mAppList.execute((Void) null);
     }
 
     @Override
