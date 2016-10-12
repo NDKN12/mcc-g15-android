@@ -29,8 +29,6 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.google.android.gms.common.ConnectionResult;
@@ -48,6 +46,12 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import static java.lang.Math.atan2;
+import static java.lang.Math.pow;
+import static java.lang.Math.sin;
+import static java.lang.Math.cos;
+import static java.lang.Math.sqrt;
+
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     private String mToken;
@@ -62,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
 
     private TextView mTextView;
+    private TextView mTextViewTest;
 
     private String mAppsListTest = "void";
     private ArrayList<JSONObject> arrays = null;
@@ -73,10 +78,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private UserLogoutTask mAuthTask = null;
     private View mProgressView;
     private View mListView;
-    private String mLatitude;
-    private String mLongitude;
-    private String mUsedLatitude;
-    private String mUsedLongitude;
+    private double mLatitude;
+    private double mLongitude;
+    private double mUsedLatitude;
+    private double mUsedLongitude;
+    private int mResumeCounter = 0;
+    private int mResumeTest;
+    private double mDistance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         // Toast.makeText(MainActivity.this, mToken, Toast.LENGTH_SHORT).show();
 
         mTextView = (TextView) findViewById(R.id.textView);
+        mTextViewTest = (TextView) findViewById(R.id.textViewTest);
         // mListTextView = (TextView) findViewById(R.id.Liste);
 
 
@@ -201,53 +210,57 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      * the user.
      */
     public class ApplicationList extends AsyncTask<Void, Void, ArrayList<JSONObject>> {
+        private String mLatitudeText;
+        private String mLongitudeText;
 
         @Override
         protected ArrayList<JSONObject> doInBackground(Void... params) {
 
-            while (mLatitude == null || mLongitude == null) {
+                // String lat = "12.124124";
+                // String lng = "12.344345";
 
-            }
-            // String lat = "12.124124";
-            // String lng = "12.344345";
-            String l = "?lat=" + mLatitude + "&lng=" + mLongitude;
-            mUsedLatitude = mLatitude;
-            mUsedLongitude = mLongitude;
-            Toast.makeText(MainActivity.this, mLatitude, Toast.LENGTH_LONG).show();
-            try {
-                // Simulate network access.
-                Response response = getList("https://mccg15.herokuapp.com/application" + l);
-                int code = response.code();
-                if (code == 200) {
-                    mAppsListTest = response.body().string().toString();
-                    mAppsListTest = "{'apps': " + mAppsListTest + "}";
-                    try {
-                        JSONObject myjson = new JSONObject(mAppsListTest);
-                        JSONArray the_json_array = myjson.getJSONArray("apps");
-                        int size = the_json_array.length();
-                        arrays = new ArrayList<JSONObject>();
-                        for (int i = 0; i < size; i++) {
-                            JSONObject another_json_object = the_json_array.getJSONObject(i);
+                mUsedLatitude = mLatitude;
+                mUsedLongitude = mLongitude;
 
-                            arrays.add(another_json_object);
+                mLatitudeText = String.valueOf(mLatitude);
+                mLongitudeText = String.valueOf(mLongitude);
+                String l = "?lat=" + mLatitudeText + "&lng=" + mLongitudeText;
+
+                try {
+                    // Simulate network access.
+                    Response response = getList("https://mccg15.herokuapp.com/application" + l);
+                    int code = response.code();
+                    if (code == 200) {
+                        mAppsListTest = response.body().string().toString();
+                        mAppsListTest = "{'apps': " + mAppsListTest + "}";
+                        try {
+                            JSONObject myjson = new JSONObject(mAppsListTest);
+                            JSONArray the_json_array = myjson.getJSONArray("apps");
+                            int size = the_json_array.length();
+                            arrays = new ArrayList<JSONObject>();
+                            for (int i = 0; i < size; i++) {
+                                JSONObject another_json_object = the_json_array.getJSONObject(i);
+
+                                arrays.add(another_json_object);
+                            }
+                            JSONObject[] jsons = new JSONObject[arrays.size()];
+                            arrays.toArray(jsons);
+                            return arrays;
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
-                        JSONObject[] jsons = new JSONObject[arrays.size()];
-                        arrays.toArray(jsons);
+                    } else {
+                        Toast.makeText(MainActivity.this, "Code: 401", Toast.LENGTH_LONG).show();
                         return arrays;
-                    } catch (JSONException e) {
-                        e.printStackTrace();
                     }
-                } else {
-                    Toast.makeText(MainActivity.this, "Code: 401", Toast.LENGTH_LONG).show();
-                    return arrays;
+                } catch (Exception i) {
+                    //Toast.makeText(MainActivity.this, "FAILURE", Toast.LENGTH_LONG).show();
+                    i.printStackTrace();
+                    Toast.makeText(MainActivity.this, "hallo" + i.getMessage(), Toast.LENGTH_LONG).show();
+                    return null;
                 }
-            } catch (Exception i) {
-                //Toast.makeText(MainActivity.this, "FAILURE", Toast.LENGTH_LONG).show();
-                i.printStackTrace();
-                Toast.makeText(MainActivity.this, "hallo" + i.getMessage(), Toast.LENGTH_LONG).show();
-                return null;
-            }
-            return arrays;
+                return arrays;
+
         }
 
 
@@ -271,10 +284,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     protected void onStart() {
         super.onStart();
         showProgress(true);
+        mResumeTest = mResumeCounter + 1;
         //Connect the client
         mGoogleApiClient.connect();
-        mAppList = new ApplicationList();
-        mAppList.execute((Void) null);
     }
 
     @Override
@@ -290,13 +302,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
-
             // No explanation needed, we can request the permission.
             ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            Toast.makeText(MainActivity.this, "No location permission!", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -323,6 +330,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         //Identifying location update parameters
 
                     } else {
+                        Toast.makeText(MainActivity.this, "No location permission!", Toast.LENGTH_SHORT).show();
                         ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
                     }
                 }
@@ -343,9 +351,32 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     public void onLocationChanged(Location location) {
         Log.i(LOG_TAG, location.toString());
-        mLatitude = String.valueOf(location.getLatitude());
-        mLongitude = String.valueOf(location.getLongitude());
-        Toast.makeText(MainActivity.this, mLongitude, Toast.LENGTH_SHORT).show();
+        mLatitude = location.getLatitude();
+        mLongitude = location.getLongitude();
+        mTextViewTest.setText(String.valueOf(mDistance));
+        if(checkDistance() || mResumeTest != mResumeCounter){
+            mAppList = new ApplicationList();
+            mAppList.execute((Void) null);
+            mResumeCounter = mResumeTest;
+            Toast.makeText(MainActivity.this, "Updating", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private boolean checkDistance(){
+        double d2r = (3.14159265359/180);
+        double dlat = (mLatitude - mUsedLatitude) * d2r;
+        double dlong = (mLongitude - mUsedLongitude) * d2r;
+        double a = pow(sin(dlat/2.0), 2) + cos(mUsedLatitude*d2r) * cos(mLatitude*d2r) * pow(sin(dlong/2.0), 2);
+        double c = 2 * atan2(sqrt(a), sqrt(1-a));
+        double d = 6367000 * c;  //meters
+        mDistance = d;
+
+        if (d > 20){
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 
 
@@ -445,7 +476,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 Intent i = new Intent(MainActivity.this, LoginActivity.class);
                 startActivity(i);
             } else {
-                Toast.makeText(MainActivity.this, "Logout failed!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Server connection failed!", Toast.LENGTH_SHORT).show();
 
                 //TESTING
                 Intent i = new Intent(MainActivity.this, LoginActivity.class);
