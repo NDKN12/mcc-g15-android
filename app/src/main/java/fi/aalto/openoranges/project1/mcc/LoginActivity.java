@@ -3,50 +3,31 @@ package fi.aalto.openoranges.project1.mcc;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Location;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.app.LoaderManager.LoaderCallbacks;
-
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
-
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
-
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
+import androidVNC.ConnectionBean;
+import androidVNC.VncCanvasActivity;
+import androidVNC.VncConstants;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-
-import static android.Manifest.permission.READ_CONTACTS;
 
 /**
  * A login screen that offers login via email/password.
@@ -258,9 +239,19 @@ public class LoginActivity extends AppCompatActivity {
 
             if (success) {
                 //Toast.makeText(LoginActivity.this, "Success!", Toast.LENGTH_SHORT).show();
-                Intent i = new Intent(LoginActivity.this, MainActivity.class);
-                i.putExtra("token", mToken);
-                startActivity(i);
+                ConnectionBean selected = new ConnectionBean();
+                selected.setAddress("104.199.4.113");
+                selected.setPassword("12345678");
+                selected.setPort(5901);
+
+
+                Intent intent = new Intent(LoginActivity.this, VncCanvasActivity.class);
+                intent.putExtra(VncConstants.CONNECTION, selected.Gen_getValues());
+                startActivity(intent);
+
+                //Intent i = new Intent(LoginActivity.this, MainActivity.class);
+               // i.putExtra("token", mToken);
+               // startActivity(i);
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();

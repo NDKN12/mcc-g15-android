@@ -5,51 +5,55 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-
-import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.support.v4.app.ActivityCompat;
-import android.location.Location;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import androidVNC.ConnectionBean;
+import androidVNC.VncCanvasActivity;
+import androidVNC.VncConstants;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
 import static java.lang.Math.atan2;
+import static java.lang.Math.cos;
 import static java.lang.Math.pow;
 import static java.lang.Math.sin;
-import static java.lang.Math.cos;
 import static java.lang.Math.sqrt;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
@@ -85,6 +89,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private int mResumeCounter = 0;
     private int mResumeTest;
     private double mDistance;
+    private String id;
+    public static final String CONNECTION = "com.coboltforge.dontmind.multivnc.CONNECTION";
+
+    public static final String PREFSNAME = "MultiVNC";
+    public static final String PREFS_KEY_POINTERHIGHLIGHT = "doPointerHighlight";
+    public static final String PREFS_KEY_MOUSEBUTTONS = "showMouseButtons";
+    public static final String PREFS_KEY_SUPPORTDLG = "showSupportDialog";
+    public static final String PREFS_KEY_APPSTARTS = "appStarts";
+    public static final String PREFS_KEY_COMMERCIALDLG = "showCommercialDialog";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,9 +136,31 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
 
+        registerClickCallback();
 
-        //mListView = findViewById(R.id.textView);
 
+
+
+        //onnectionBean conn = makeNewConnFromView();
+        // if (conn == null)
+        //    return;
+        // writeRecent(conn);
+        //Log.d(TAG, "Starting NEW connection " + conn.toString());
+        // Intent intent = new Intent(MainActivity.this, VncCanvasActivity.class);
+        // intent.putExtra(CONNECTION, conn.Gen_getValues());
+        // startActivity(intent);
+    }
+
+    private void registerClickCallback() {
+        ListView list = (ListView) findViewById(R.id.oo_AppsListView);
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View viewClicked, int position, long id) {
+                Application clickedApp = myApps.get(position);
+                String message = "you clicked position: " + position + " App with id: " + clickedApp.getId();
+                Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void populateListView() {
@@ -216,50 +251,50 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         @Override
         protected ArrayList<JSONObject> doInBackground(Void... params) {
 
-                // String lat = "12.124124";
-                // String lng = "12.344345";
+            // String lat = "12.124124";
+            // String lng = "12.344345";
 
-                mUsedLatitude = mLatitude;
-                mUsedLongitude = mLongitude;
+            mUsedLatitude = mLatitude;
+            mUsedLongitude = mLongitude;
 
-                mLatitudeText = String.valueOf(mLatitude);
-                mLongitudeText = String.valueOf(mLongitude);
-                String l = "?lat=" + mLatitudeText + "&lng=" + mLongitudeText;
+            mLatitudeText = String.valueOf(mLatitude);
+            mLongitudeText = String.valueOf(mLongitude);
+            String l = "?lat=" + mLatitudeText + "&lng=" + mLongitudeText;
 
-                try {
-                    // Simulate network access.
-                    Response response = getList("https://mccg15.herokuapp.com/application" + l);
-                    int code = response.code();
-                    if (code == 200) {
-                        mAppsListTest = response.body().string().toString();
-                        mAppsListTest = "{'apps': " + mAppsListTest + "}";
-                        try {
-                            JSONObject myjson = new JSONObject(mAppsListTest);
-                            JSONArray the_json_array = myjson.getJSONArray("apps");
-                            int size = the_json_array.length();
-                            arrays = new ArrayList<JSONObject>();
-                            for (int i = 0; i < size; i++) {
-                                JSONObject another_json_object = the_json_array.getJSONObject(i);
+            try {
+                // Simulate network access.
+                Response response = getList("https://mccg15.herokuapp.com/application" + l);
+                int code = response.code();
+                if (code == 200) {
+                    mAppsListTest = response.body().string().toString();
+                    mAppsListTest = "{'apps': " + mAppsListTest + "}";
+                    try {
+                        JSONObject myjson = new JSONObject(mAppsListTest);
+                        JSONArray the_json_array = myjson.getJSONArray("apps");
+                        int size = the_json_array.length();
+                        arrays = new ArrayList<JSONObject>();
+                        for (int i = 0; i < size; i++) {
+                            JSONObject another_json_object = the_json_array.getJSONObject(i);
 
-                                arrays.add(another_json_object);
-                            }
-                            JSONObject[] jsons = new JSONObject[arrays.size()];
-                            arrays.toArray(jsons);
-                            return arrays;
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                            arrays.add(another_json_object);
                         }
-                    } else {
-                        Toast.makeText(MainActivity.this, "Code: 401", Toast.LENGTH_LONG).show();
+                        JSONObject[] jsons = new JSONObject[arrays.size()];
+                        arrays.toArray(jsons);
                         return arrays;
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                } catch (Exception i) {
-                    //Toast.makeText(MainActivity.this, "FAILURE", Toast.LENGTH_LONG).show();
-                    i.printStackTrace();
-                    Toast.makeText(MainActivity.this, "hallo" + i.getMessage(), Toast.LENGTH_LONG).show();
-                    return null;
+                } else {
+                    Toast.makeText(MainActivity.this, "Code: 401", Toast.LENGTH_LONG).show();
+                    return arrays;
                 }
-                return arrays;
+            } catch (Exception i) {
+                //Toast.makeText(MainActivity.this, "FAILURE", Toast.LENGTH_LONG).show();
+                i.printStackTrace();
+                Toast.makeText(MainActivity.this, "hallo" + i.getMessage(), Toast.LENGTH_LONG).show();
+                return null;
+            }
+            return arrays;
 
         }
 
@@ -354,7 +389,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mLatitude = location.getLatitude();
         mLongitude = location.getLongitude();
         mTextViewTest.setText(String.valueOf(mDistance));
-        if(checkDistance() || mResumeTest != mResumeCounter){
+        if (checkDistance() || mResumeTest != mResumeCounter) {
             mAppList = new ApplicationList();
             mAppList.execute((Void) null);
             mResumeCounter = mResumeTest;
@@ -362,19 +397,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    private boolean checkDistance(){
-        double d2r = (3.14159265359/180);
+    private boolean checkDistance() {
+        double d2r = (3.14159265359 / 180);
         double dlat = (mLatitude - mUsedLatitude) * d2r;
         double dlong = (mLongitude - mUsedLongitude) * d2r;
-        double a = pow(sin(dlat/2.0), 2) + cos(mUsedLatitude*d2r) * cos(mLatitude*d2r) * pow(sin(dlong/2.0), 2);
-        double c = 2 * atan2(sqrt(a), sqrt(1-a));
+        double a = pow(sin(dlat / 2.0), 2) + cos(mUsedLatitude * d2r) * cos(mLatitude * d2r) * pow(sin(dlong / 2.0), 2);
+        double c = 2 * atan2(sqrt(a), sqrt(1 - a));
         double d = 6367000 * c;  //meters
         mDistance = d;
 
-        if (d > 20){
+        if (d > 20) {
             return true;
-        }
-        else{
+        } else {
             return false;
         }
     }

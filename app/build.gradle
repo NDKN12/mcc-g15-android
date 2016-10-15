@@ -20,7 +20,6 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.squareup.okhttp3:okhttp:3.4.1'
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
@@ -32,14 +31,13 @@ dependencies {
     compile 'com.facebook.fresco:fresco:0.14.1'
     // If your app supports Android versions before Ice Cream Sandwich (API level 14)
     compile 'com.facebook.fresco:animated-base-support:0.14.1'
-
     // For animated GIF support
     compile 'com.facebook.fresco:animated-gif:0.14.1'
-
     // For WebP support, including animated WebP
     compile 'com.facebook.fresco:animated-webp:0.14.1'
     compile 'com.facebook.fresco:webpsupport:0.14.1'
-
     // For WebP support, without animations
     compile 'com.facebook.fresco:webpsupport:0.14.1'
+    compile files('C:/Users/Neil/AndroidStudioProjects/mcc-g15-android/libs/com.antlersoft.android.contentxml.jar')
+    compile files('C:/Users/Neil/AndroidStudioProjects/mcc-g15-android/libs/com.antlersoft.android.db.jar')
 }
