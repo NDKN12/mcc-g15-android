@@ -16,11 +16,11 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.InetAddress;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -194,6 +194,17 @@ public class LoginActivity extends AppCompatActivity {
         return response;
     }
 
+
+    public boolean isInternetAvailable() {
+        try {
+            InetAddress ipAddr = InetAddress.getByName("google.com"); //You can replace it with your name
+            return !ipAddr.equals("");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     /**
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
@@ -203,6 +214,7 @@ public class LoginActivity extends AppCompatActivity {
         private final String mUsername;
         private final String mPassword;
         private String mToken;
+        private boolean isInternetAvailable;
 
         UserLoginTask(String username, String password) {
             mUsername = username;
@@ -223,6 +235,7 @@ public class LoginActivity extends AppCompatActivity {
                     mToken = myjson.getString("token");
 
                 } else {
+                    isInternetAvailable = isInternetAvailable();
                     return false;
                 }
             } catch (Exception i) {
@@ -239,16 +252,15 @@ public class LoginActivity extends AppCompatActivity {
             showProgress(false);
 
             if (success) {
-                //Toast.makeText(LoginActivity.this, "Success!", Toast.LENGTH_SHORT).show();
-
-
                 Intent i = new Intent(LoginActivity.this, MainActivity.class);
                 i.putExtra("token", mToken);
                 startActivity(i);
-            } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
+            } else if (!isInternetAvailable) {
+                mPasswordView.setError("No internet connection!");
                 mPasswordView.requestFocus();
-                Toast.makeText(LoginActivity.this, "Wrong Password!", Toast.LENGTH_SHORT).show();
+            } else {
+                mPasswordView.setError("Either username or password is incorrect!");
+                mPasswordView.requestFocus();
             }
         }
 

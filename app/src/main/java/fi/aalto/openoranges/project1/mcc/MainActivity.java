@@ -42,6 +42,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidVNC.ConnectionBean;
+import androidVNC.VncCanvasActivity;
+import androidVNC.VncConstants;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -110,7 +113,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         mToken = getIntent().getStringExtra("token");
-        Toast.makeText(MainActivity.this, mToken, Toast.LENGTH_SHORT).show();
 
         mTextView = (TextView) findViewById(R.id.textView);
         mTextViewTest = (TextView) findViewById(R.id.textViewTest);
@@ -126,20 +128,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         });
 
         registerClickCallback();
-
-
-        //ConnectionBean selected = new ConnectionBean();
-        //selected.setAddress("104.199.4.113");
-        // selected.setPassword("12345678");
-        // selected.setPort(5901);
-        //  Intent intent = new Intent(LoginActivity.this, VncCanvasActivity.class);
-        //  intent.putExtra(VncConstants.CONNECTION, selected.Gen_getValues());
-
-        //  try {
-        //    startActivity(intent);
-        // } catch (Exception i) {
-        //    i.printStackTrace();
-        // }
     }
 
     private void registerClickCallback() {
@@ -148,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             @Override
             public void onItemClick(AdapterView<?> parent, View viewClicked, int position, long id) {
                 Application clickedApp = myApps.get(position);
-                String message = "You chose App " + clickedApp.getName() + " wait for the VM to start!";
+                String message = "Launching " + clickedApp.getName() + " wait for the VM to start!";
 
                 mGoogleApiClient.disconnect();
                 Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
@@ -300,8 +288,34 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mGetAppTask = null;
             showProgress(false);
             mGoogleApiClient.connect();
+            String port = mVmUrl.substring(mVmUrl.length() - 4);
+            mVmUrl = mVmUrl.substring(0, mVmUrl.length() - 5);
+
             if (success) {
                 Toast.makeText(MainActivity.this, "SUCCESS :" + mVmUrl, Toast.LENGTH_LONG).show();
+
+                ConnectionBean selected = new ConnectionBean();
+                selected.setAddress(mVmUrl);
+                selected.setPassword("12345678");
+                try
+                {
+                    selected.setPort(Integer.parseInt(port));
+                }
+                catch (NumberFormatException nfe)
+                {
+                    selected.setPort(5901);
+                    Log.d("NumberFormatException", nfe.toString());
+                }
+
+
+                Intent intent = new Intent(MainActivity.this, VncCanvasActivity.class);
+                intent.putExtra(VncConstants.CONNECTION, selected.Gen_getValues());
+
+                try {
+                    startActivity(intent);
+                } catch (Exception i) {
+                    i.printStackTrace();
+                }
             } else {
                 Toast.makeText(MainActivity.this, "FAILURE", Toast.LENGTH_LONG).show();
             }
@@ -358,13 +372,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         e.printStackTrace();
                     }
                 } else {
-                    Toast.makeText(MainActivity.this, "Code: 401", Toast.LENGTH_LONG).show();
+
                     return arrays;
                 }
             } catch (Exception i) {
-                //Toast.makeText(MainActivity.this, "FAILURE", Toast.LENGTH_LONG).show();
                 i.printStackTrace();
-                Toast.makeText(MainActivity.this, "hallo" + i.getMessage(), Toast.LENGTH_LONG).show();
                 return null;
             }
             return arrays;
@@ -372,9 +384,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
 
-        protected void onPostExecute(ArrayList<JSONObject> liste) {
+        protected void onPostExecute(ArrayList<JSONObject> list) {
             mAppList = null;
-            arrays = liste;
+            arrays = list;
+
             populateAppList();
 
         }
@@ -438,7 +451,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         //Identifying location update parameters
 
                     } else {
-                        Toast.makeText(MainActivity.this, "No location permission!", Toast.LENGTH_SHORT).show();
                         ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
                     }
                 }
@@ -466,7 +478,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mAppList = new ApplicationList();
             mAppList.execute((Void) null);
             mResumeCounter = mResumeTest;
-            // Toast.makeText(MainActivity.this, "Updating Location!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, "Updating Location!", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -554,23 +566,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
 
             try {
                 // Simulate network access.
                 Response response = post("https://mccg15.herokuapp.com/users/logout");
                 int code = response.code();
                 if (code == 200) {
-
+                    return true;
                 } else {
                     return false;
                 }
             } catch (Exception i) {
-
+                i.printStackTrace();
                 return false;
             }
-
-            return true;
         }
 
         @Override

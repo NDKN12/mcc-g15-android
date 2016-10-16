@@ -604,7 +604,11 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
                 connection.setAddress(host.substring(0, host.indexOf(':')));
             }
         }
-        setContentView(fi.aalto.openoranges.project1.mcc.R.layout.canvas);
+        try {
+            setContentView(fi.aalto.openoranges.project1.mcc.R.layout.canvas);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         vncCanvas = (VncCanvas) findViewById(fi.aalto.openoranges.project1.mcc.R.id.vnc_canvas);
         zoomer = (ZoomControls) findViewById(fi.aalto.openoranges.project1.mcc.R.id.zoomer);
