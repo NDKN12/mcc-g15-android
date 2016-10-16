@@ -42,9 +42,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import androidVNC.ConnectionBean;
-import androidVNC.VncCanvasActivity;
-import androidVNC.VncConstants;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -67,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     OkHttpClient client = new OkHttpClient();
     private ApplicationList mAppList = null;
-
+    private getApplicationTask mGetAppTask = null;
 
     private TextView mTextView;
     private TextView mTextViewTest;
@@ -89,15 +86,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private int mResumeCounter = 0;
     private int mResumeTest;
     private double mDistance;
-    private String id;
-    public static final String CONNECTION = "com.coboltforge.dontmind.multivnc.CONNECTION";
 
-    public static final String PREFSNAME = "MultiVNC";
-    public static final String PREFS_KEY_POINTERHIGHLIGHT = "doPointerHighlight";
-    public static final String PREFS_KEY_MOUSEBUTTONS = "showMouseButtons";
-    public static final String PREFS_KEY_SUPPORTDLG = "showSupportDialog";
-    public static final String PREFS_KEY_APPSTARTS = "appStarts";
-    public static final String PREFS_KEY_COMMERCIALDLG = "showCommercialDialog";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         mToken = getIntent().getStringExtra("token");
-        // Toast.makeText(MainActivity.this, mToken, Toast.LENGTH_SHORT).show();
+        Toast.makeText(MainActivity.this, mToken, Toast.LENGTH_SHORT).show();
 
         mTextView = (TextView) findViewById(R.id.textView);
         mTextViewTest = (TextView) findViewById(R.id.textViewTest);
@@ -139,16 +128,18 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         registerClickCallback();
 
 
+        //ConnectionBean selected = new ConnectionBean();
+        //selected.setAddress("104.199.4.113");
+        // selected.setPassword("12345678");
+        // selected.setPort(5901);
+        //  Intent intent = new Intent(LoginActivity.this, VncCanvasActivity.class);
+        //  intent.putExtra(VncConstants.CONNECTION, selected.Gen_getValues());
 
-
-        //onnectionBean conn = makeNewConnFromView();
-        // if (conn == null)
-        //    return;
-        // writeRecent(conn);
-        //Log.d(TAG, "Starting NEW connection " + conn.toString());
-        // Intent intent = new Intent(MainActivity.this, VncCanvasActivity.class);
-        // intent.putExtra(CONNECTION, conn.Gen_getValues());
-        // startActivity(intent);
+        //  try {
+        //    startActivity(intent);
+        // } catch (Exception i) {
+        //    i.printStackTrace();
+        // }
     }
 
     private void registerClickCallback() {
@@ -157,8 +148,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             @Override
             public void onItemClick(AdapterView<?> parent, View viewClicked, int position, long id) {
                 Application clickedApp = myApps.get(position);
-                String message = "you clicked position: " + position + " App with id: " + clickedApp.getId();
-                Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+                String message = "You chose App " + clickedApp.getName() + " wait for the VM to start!";
+
+                mGoogleApiClient.disconnect();
+                Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
+                showProgress(true);
+                mGetAppTask = new getApplicationTask(clickedApp.getId());
+                mGetAppTask.execute((Void) null);
             }
         });
     }
@@ -241,8 +237,86 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
 
     /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
+     * Represents an asynchronous task used to get the address of the chosen application
+     */
+    public class getApplicationTask extends AsyncTask<Void, Void, Boolean> {
+        private final String mId;
+        private String mVmUrl;
+
+        public getApplicationTask(String id) {
+            mId = id;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            int counter = 0;
+            try {
+                // Simulate network access.
+                Response response = MainActivity.this.get("https://mccg15.herokuapp.com/application/" + mId);
+                int code = response.code();
+
+                if (code == 200) {
+                    JSONObject myjson = new JSONObject(response.body().string().toString());
+                    mVmUrl = myjson.getString("vm_url");
+                    return true;
+                } else if (code == 202) {
+                    while (counter < 20) {
+                        Thread.sleep(10000);
+                        response = MainActivity.this.get("https://mccg15.herokuapp.com/application/" + mId);
+                        if (response.code() == 200) {
+                            JSONObject myjson = new JSONObject(response.body().string().toString());
+                            mVmUrl = myjson.getString("vm_url");
+                            return true;
+                        } else if (response.code() == 202) {
+                            runOnUiThread(new Runnable() {
+                                public void run() {
+                                    Toast.makeText(MainActivity.this, "Still waiting for the VM to start!", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        } else if (response.code() == 401) {
+                            return false;
+                        }
+                        counter++;
+                    }
+                    if (counter >= 20) {
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                Toast.makeText(MainActivity.this, "Time exceeded, we are sorry!", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                    return false;
+                } else {
+                    return false;
+                }
+            } catch (Exception i) {
+                i.printStackTrace();
+                return false;
+            }
+        }
+
+
+        protected void onPostExecute(Boolean success) {
+            mGetAppTask = null;
+            showProgress(false);
+            mGoogleApiClient.connect();
+            if (success) {
+                Toast.makeText(MainActivity.this, "SUCCESS :" + mVmUrl, Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(MainActivity.this, "FAILURE", Toast.LENGTH_LONG).show();
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            mGetAppTask = null;
+
+        }
+    }
+
+
+    /**
+     * Represents an asynchronous task used to get a list of applications from the server
      */
     public class ApplicationList extends AsyncTask<Void, Void, ArrayList<JSONObject>> {
         private String mLatitudeText;
@@ -275,7 +349,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         arrays = new ArrayList<JSONObject>();
                         for (int i = 0; i < size; i++) {
                             JSONObject another_json_object = the_json_array.getJSONObject(i);
-
                             arrays.add(another_json_object);
                         }
                         JSONObject[] jsons = new JSONObject[arrays.size()];
@@ -393,7 +466,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mAppList = new ApplicationList();
             mAppList.execute((Void) null);
             mResumeCounter = mResumeTest;
-            Toast.makeText(MainActivity.this, "Updating", Toast.LENGTH_SHORT).show();
+            // Toast.makeText(MainActivity.this, "Updating Location!", Toast.LENGTH_SHORT).show();
         }
     }
 

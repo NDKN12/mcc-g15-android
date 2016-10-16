@@ -604,10 +604,10 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
                 connection.setAddress(host.substring(0, host.indexOf(':')));
             }
         }
-        setContentView(R.layout.canvas);
+        setContentView(fi.aalto.openoranges.project1.mcc.R.layout.canvas);
 
-        vncCanvas = (VncCanvas) findViewById(R.id.vnc_canvas);
-        zoomer = (ZoomControls) findViewById(R.id.zoomer);
+        vncCanvas = (VncCanvas) findViewById(fi.aalto.openoranges.project1.mcc.R.id.vnc_canvas);
+        zoomer = (ZoomControls) findViewById(fi.aalto.openoranges.project1.mcc.R.id.zoomer);
 
         vncCanvas.initializeVncCanvas(connection, new Runnable() {
             public void run() {
@@ -662,7 +662,7 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
         });
         panner = new Panner(this, vncCanvas.handler);
 
-        inputHandler = getInputHandlerById(R.id.itemInputFitToScreen);
+        inputHandler = getInputHandlerById(fi.aalto.openoranges.project1.mcc.R.id.itemInputFitToScreen);
     }
 
     /**
@@ -690,7 +690,7 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
     @Override
     protected Dialog onCreateDialog(int id) {
         switch (id) {
-            case R.layout.entertext:
+            case fi.aalto.openoranges.project1.mcc.R.layout.entertext:
                 return new EnterTextDialog(this);
         }
         // Default to meta key dialog
@@ -732,21 +732,21 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.vnccanvasactivitymenu, menu);
+        getMenuInflater().inflate(fi.aalto.openoranges.project1.mcc.R.menu.vnccanvasactivitymenu, menu);
 
         if (vncCanvas.scaling != null)
             menu.findItem(vncCanvas.scaling.getId()).setChecked(true);
 
-        Menu inputMenu = menu.findItem(R.id.itemInputMode).getSubMenu();
+        Menu inputMenu = menu.findItem(fi.aalto.openoranges.project1.mcc.R.id.itemInputMode).getSubMenu();
 
         inputModeMenuItems = new MenuItem[inputModeIds.length];
         for (int i = 0; i < inputModeIds.length; i++) {
             inputModeMenuItems[i] = inputMenu.findItem(inputModeIds[i]);
         }
         updateInputMenu();
-        menu.findItem(R.id.itemFollowMouse).setChecked(
+        menu.findItem(fi.aalto.openoranges.project1.mcc.R.id.itemFollowMouse).setChecked(
                 connection.getFollowMouse());
-        menu.findItem(R.id.itemFollowPan).setChecked(connection.getFollowPan());
+        menu.findItem(fi.aalto.openoranges.project1.mcc.R.id.itemFollowPan).setChecked(connection.getFollowPan());
         return true;
     }
 
@@ -779,28 +779,28 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
             if (inputModeIds[i] == id) {
                 if (inputModeHandlers[i] == null) {
                     switch (id) {
-                        case R.id.itemInputFitToScreen:
+                        case fi.aalto.openoranges.project1.mcc.R.id.itemInputFitToScreen:
                             inputModeHandlers[i] = new FitToScreenMode();
                             break;
-                        case R.id.itemInputPan:
+                        case fi.aalto.openoranges.project1.mcc.R.id.itemInputPan:
                             inputModeHandlers[i] = new PanMode();
                             break;
-                        case R.id.itemInputMouse:
+                        case fi.aalto.openoranges.project1.mcc.R.id.itemInputMouse:
                             inputModeHandlers[i] = new MouseMode();
                             break;
-                        case R.id.itemInputHardwareMouse:
+                        case fi.aalto.openoranges.project1.mcc.R.id.itemInputHardwareMouse:
                             inputModeHandlers[i] = new HardwareMouseMode();
                             break;
-                        case R.id.itemInputTouchPanTrackballMouse:
+                        case fi.aalto.openoranges.project1.mcc.R.id.itemInputTouchPanTrackballMouse:
                             inputModeHandlers[i] = new TouchPanTrackballMouse();
                             break;
-                        case R.id.itemInputDPadPanTouchMouse:
+                        case fi.aalto.openoranges.project1.mcc.R.id.itemInputDPadPanTouchMouse:
                             inputModeHandlers[i] = new DPadPanTouchMouseMode();
                             break;
-                        case R.id.itemInputTouchPanZoomMouse:
+                        case fi.aalto.openoranges.project1.mcc.R.id.itemInputTouchPanZoomMouse:
                             inputModeHandlers[i] = new ZoomInputHandler();
                             break;
-                        case R.id.itemInputTouchpad:
+                        case fi.aalto.openoranges.project1.mcc.R.id.itemInputTouchpad:
                             inputModeHandlers[i] = new TouchpadInputHandler();
                             break;
                     }
@@ -821,7 +821,7 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
             }
         }
         if (result == null) {
-            result = getInputHandlerById(R.id.itemInputTouchPanZoomMouse);
+            result = getInputHandlerById(fi.aalto.openoranges.project1.mcc.R.id.itemInputTouchPanZoomMouse);
         }
         return result;
     }
@@ -831,48 +831,48 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
             if (handler == getInputHandlerById(id))
                 return id;
         }
-        return R.id.itemInputTouchPanZoomMouse;
+        return fi.aalto.openoranges.project1.mcc.R.id.itemInputTouchPanZoomMouse;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         vncCanvas.afterMenu = true;
         switch (item.getItemId()) {
-            case R.id.itemInfo:
+            case fi.aalto.openoranges.project1.mcc.R.id.itemInfo:
                 vncCanvas.showConnectionInfo();
                 return true;
-            case R.id.itemSpecialKeys:
-                showDialog(R.layout.metakey);
+            case fi.aalto.openoranges.project1.mcc.R.id.itemSpecialKeys:
+                showDialog(fi.aalto.openoranges.project1.mcc.R.layout.metakey);
                 return true;
-            case R.id.itemColorMode:
+            case fi.aalto.openoranges.project1.mcc.R.id.itemColorMode:
                 selectColorModel();
                 return true;
             // Following sets one of the scaling options
-            case R.id.itemZoomable:
-            case R.id.itemOneToOne:
-            case R.id.itemFitToScreen:
+            case fi.aalto.openoranges.project1.mcc.R.id.itemZoomable:
+            case fi.aalto.openoranges.project1.mcc.R.id.itemOneToOne:
+            case fi.aalto.openoranges.project1.mcc.R.id.itemFitToScreen:
                 AbstractScaling.getById(item.getItemId()).setScaleTypeForActivity(
                         this);
                 item.setChecked(true);
                 showPanningState();
                 return true;
-            case R.id.itemCenterMouse:
+            case fi.aalto.openoranges.project1.mcc.R.id.itemCenterMouse:
                 vncCanvas.warpMouse(vncCanvas.absoluteXPosition
                                 + vncCanvas.getVisibleWidth() / 2,
                         vncCanvas.absoluteYPosition + vncCanvas.getVisibleHeight()
                                 / 2);
                 return true;
-            case R.id.itemDisconnect:
+            case fi.aalto.openoranges.project1.mcc.R.id.itemDisconnect:
                 vncCanvas.closeConnection();
                 finish();
                 return true;
-            case R.id.itemEnterText:
-                showDialog(R.layout.entertext);
+            case fi.aalto.openoranges.project1.mcc.R.id.itemEnterText:
+                showDialog(fi.aalto.openoranges.project1.mcc.R.layout.entertext);
                 return true;
-            case R.id.itemCtrlAltDel:
+            case fi.aalto.openoranges.project1.mcc.R.id.itemCtrlAltDel:
                 vncCanvas.sendMetaKey(MetaKeyBean.keyCtrlAltDel);
                 return true;
-            case R.id.itemFollowMouse:
+            case fi.aalto.openoranges.project1.mcc.R.id.itemFollowMouse:
                 boolean newFollow = !connection.getFollowMouse();
                 item.setChecked(newFollow);
                 connection.setFollowMouse(newFollow);
@@ -881,28 +881,28 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
                 }
                 connection.save(database.getWritableDatabase());
                 return true;
-            case R.id.itemFollowPan:
+            case fi.aalto.openoranges.project1.mcc.R.id.itemFollowPan:
                 boolean newFollowPan = !connection.getFollowPan();
                 item.setChecked(newFollowPan);
                 connection.setFollowPan(newFollowPan);
                 connection.save(database.getWritableDatabase());
                 return true;
-            case R.id.itemArrowLeft:
+            case fi.aalto.openoranges.project1.mcc.R.id.itemArrowLeft:
                 vncCanvas.sendMetaKey(MetaKeyBean.keyArrowLeft);
                 return true;
-            case R.id.itemArrowUp:
+            case fi.aalto.openoranges.project1.mcc.R.id.itemArrowUp:
                 vncCanvas.sendMetaKey(MetaKeyBean.keyArrowUp);
                 return true;
-            case R.id.itemArrowRight:
+            case fi.aalto.openoranges.project1.mcc.R.id.itemArrowRight:
                 vncCanvas.sendMetaKey(MetaKeyBean.keyArrowRight);
                 return true;
-            case R.id.itemArrowDown:
+            case fi.aalto.openoranges.project1.mcc.R.id.itemArrowDown:
                 vncCanvas.sendMetaKey(MetaKeyBean.keyArrowDown);
                 return true;
-            case R.id.itemSendKeyAgain:
+            case fi.aalto.openoranges.project1.mcc.R.id.itemSendKeyAgain:
                 sendSpecialKeyAgain();
                 return true;
-            case R.id.itemOpenDoc:
+            case fi.aalto.openoranges.project1.mcc.R.id.itemOpenDoc:
                 Utils.showDocumentation(this);
                 return true;
             default:
@@ -1205,7 +1205,7 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
             // button switches to mouse mode
             switch (keyCode) {
                 case KeyEvent.KEYCODE_DPAD_CENTER:
-                    inputHandler = getInputHandlerById(R.id.itemInputMouse);
+                    inputHandler = getInputHandlerById(fi.aalto.openoranges.project1.mcc.R.id.itemInputMouse);
                     connection.setInputMode(inputHandler.getName());
                     connection.save(database.getWritableDatabase());
                     updateInputMenu();
@@ -1464,7 +1464,7 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
         @Override
         public boolean onKeyUp(int keyCode, KeyEvent evt) {
             if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
-                inputHandler = getInputHandlerById(R.id.itemInputPan);
+                inputHandler = getInputHandlerById(fi.aalto.openoranges.project1.mcc.R.id.itemInputPan);
                 showPanningState();
                 connection.setInputMode(inputHandler.getName());
                 connection.save(database.getWritableDatabase());

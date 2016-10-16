@@ -18,11 +18,10 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+
 import java.io.IOException;
 
-import androidVNC.ConnectionBean;
-import androidVNC.VncCanvasActivity;
-import androidVNC.VncConstants;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -220,7 +219,9 @@ public class LoginActivity extends AppCompatActivity {
                 Response response = post("https://mccg15.herokuapp.com/users/login", login_body);
                 int code = response.code();
                 if (code == 200) {
-                    mToken = response.body().string();
+                    JSONObject myjson = new JSONObject(response.body().string().toString());
+                    mToken = myjson.getString("token");
+
                 } else {
                     return false;
                 }
@@ -239,19 +240,11 @@ public class LoginActivity extends AppCompatActivity {
 
             if (success) {
                 //Toast.makeText(LoginActivity.this, "Success!", Toast.LENGTH_SHORT).show();
-                ConnectionBean selected = new ConnectionBean();
-                selected.setAddress("104.199.4.113");
-                selected.setPassword("12345678");
-                selected.setPort(5901);
 
 
-                Intent intent = new Intent(LoginActivity.this, VncCanvasActivity.class);
-                intent.putExtra(VncConstants.CONNECTION, selected.Gen_getValues());
-                startActivity(intent);
-
-                //Intent i = new Intent(LoginActivity.this, MainActivity.class);
-               // i.putExtra("token", mToken);
-               // startActivity(i);
+                Intent i = new Intent(LoginActivity.this, MainActivity.class);
+                i.putExtra("token", mToken);
+                startActivity(i);
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
