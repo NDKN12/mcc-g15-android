@@ -606,12 +606,13 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
         }
         try {
             setContentView(fi.aalto.openoranges.project1.mcc.R.layout.canvas);
+            vncCanvas = (VncCanvas) findViewById(fi.aalto.openoranges.project1.mcc.R.id.vnc_canvas);
+            zoomer = (ZoomControls) findViewById(R.id.zoomer);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        vncCanvas = (VncCanvas) findViewById(fi.aalto.openoranges.project1.mcc.R.id.vnc_canvas);
-        zoomer = (ZoomControls) findViewById(fi.aalto.openoranges.project1.mcc.R.id.zoomer);
+
 
         vncCanvas.initializeVncCanvas(connection, new Runnable() {
             public void run() {
