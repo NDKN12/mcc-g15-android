@@ -297,12 +297,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 ConnectionBean selected = new ConnectionBean();
                 selected.setAddress(mVmUrl);
                 selected.setPassword("12345678");
-                try
-                {
+                try {
                     selected.setPort(Integer.parseInt(port));
-                }
-                catch (NumberFormatException nfe)
-                {
+                } catch (NumberFormatException nfe) {
                     selected.setPort(5901);
                     Log.d("NumberFormatException", nfe.toString());
                 }
@@ -310,12 +307,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
                 Intent intent = new Intent(MainActivity.this, VncCanvasActivity.class);
                 intent.putExtra(VncConstants.CONNECTION, selected.Gen_getValues());
-
+                intent.putExtra("token", mToken);
+                intent.putExtra("id", mId);
                 try {
                     startActivity(intent);
                 } catch (Exception i) {
                     i.printStackTrace();
                 }
+                finish();
             } else {
                 Toast.makeText(MainActivity.this, "FAILURE", Toast.LENGTH_LONG).show();
             }
@@ -591,12 +590,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 Toast.makeText(MainActivity.this, "Logout successfully!", Toast.LENGTH_SHORT).show();
                 Intent i = new Intent(MainActivity.this, LoginActivity.class);
                 startActivity(i);
+                finish();
             } else {
                 Toast.makeText(MainActivity.this, "Server connection failed!", Toast.LENGTH_SHORT).show();
 
                 //TESTING
                 Intent i = new Intent(MainActivity.this, LoginActivity.class);
                 startActivity(i);
+                finish();
             }
         }
 

@@ -32,6 +32,7 @@ import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.PointF;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
@@ -46,16 +47,22 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.antlersoft.android.bc.BCFactory;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import fi.aalto.openoranges.project1.mcc.MainActivity;
 import fi.aalto.openoranges.project1.mcc.R;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class VncCanvasActivity extends Activity implements View.OnGenericMotionListener {
 
@@ -152,6 +159,7 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
          * per pan interval
          */
         static final float FLING_FACTOR = 8;
+
 
         /*
          * (non-Javadoc)
@@ -531,6 +539,12 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
 
     ZoomControls zoomer;
     Panner panner;
+    Button backButton;
+    private String mToken;
+    private String mId;
+    OkHttpClient client = new OkHttpClient();
+    private cancelApplication mCancelApplication = null;
+
 
     @Override
     public void onCreate(Bundle icicle) {
@@ -613,7 +627,6 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
         }
 
 
-
         vncCanvas.initializeVncCanvas(connection, new Runnable() {
             public void run() {
                 setModes();
@@ -668,7 +681,86 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
         panner = new Panner(this, vncCanvas.handler);
 
         inputHandler = getInputHandlerById(fi.aalto.openoranges.project1.mcc.R.id.itemInputFitToScreen);
+
+        mToken = getIntent().getStringExtra("token");
+        mId = getIntent().getStringExtra("id");
+        registerClickCallback();
     }
+
+    private void registerClickCallback() {
+        backButton = (Button) findViewById(R.id.back);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mCancelApplication = new VncCanvasActivity.cancelApplication();
+                mCancelApplication.execute((Void) null);
+            }
+        });
+    }
+
+
+    public Response DELETE(String url) throws IOException {
+        Request request = new Request.Builder()
+                .url(url).delete()
+                .addHeader("Authorization", mToken)
+                .build();
+        return client.newCall(request).execute();
+    }
+
+
+    /**
+     * Represents an asynchronous task used to get the address of the chosen application
+     */
+    public class cancelApplication extends AsyncTask<Void, Void, Boolean> {
+
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            int counter = 0;
+            try {
+                // Simulate network access.
+                Response response = VncCanvasActivity.this.DELETE("https://mccg15.herokuapp.com/application/" + mId);
+                int code = response.code();
+
+                if (code == 202) {
+                    return true;
+                } else if (code == 401) {
+                    return true;
+                } else if (code == 404) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } catch (Exception i) {
+                i.printStackTrace();
+                return false;
+            }
+        }
+
+        protected void onPostExecute(Boolean success) {
+            mCancelApplication = null;
+
+            if (success) {
+                Toast.makeText(VncCanvasActivity.this, "VM has been terminated!", Toast.LENGTH_SHORT).show();
+
+                Intent intent = new Intent(VncCanvasActivity.this, MainActivity.class);
+                intent.putExtra("token", mToken);
+                startActivity(intent);
+                vncCanvas.closeConnection();
+                finish();
+            } else {
+                Toast.makeText(VncCanvasActivity.this, "FAILURE", Toast.LENGTH_LONG).show();
+                vncCanvas.closeConnection();
+                finish();
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            mCancelApplication = null;
+        }
+    }
+
 
     /**
      * Set modes on start to match what is specified in the ConnectionBean;
