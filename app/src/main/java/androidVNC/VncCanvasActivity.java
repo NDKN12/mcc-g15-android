@@ -1069,8 +1069,7 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
     }
 
     public void showPanningState() {
-        Toast.makeText(this, inputHandler.getHandlerDescription(),
-                Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, inputHandler.getHandlerDescription(),  Toast.LENGTH_SHORT).show();
     }
 
     /*
@@ -1130,9 +1129,7 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
                 vncCanvas.setColorModel(cm);
                 connection.setColorModel(cm.nameString());
                 connection.save(database.getWritableDatabase());
-                Toast.makeText(VncCanvasActivity.this,
-                        "Updating Color Model to " + cm.toString(),
-                        Toast.LENGTH_SHORT).show();
+                //Toast.makeText(VncCanvasActivity.this,"Updating Color Model to " + cm.toString(), Toast.LENGTH_SHORT).show();
             }
         });
         dialog.setOnDismissListener(new OnDismissListener() {

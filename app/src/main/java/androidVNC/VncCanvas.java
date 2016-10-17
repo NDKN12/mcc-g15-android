@@ -1013,7 +1013,7 @@ public class VncCanvas extends ImageView {
 
 	private Runnable reDraw = new Runnable() {
 		public void run() {
-			if (showDesktopInfo) {
+			if (false) {
 				// Show a Toast with the desktop info on first frame draw.
 				showDesktopInfo = false;
 				showConnectionInfo();
@@ -1053,7 +1053,7 @@ public class VncCanvas extends ImageView {
 			msg += ", " + getEncoding() + " encoding, " + colorModel.toString();
 		else
 			msg += ", " + colorModel.toString();
-		Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();
+		//Toast.makeText(getContext(), msg, Toast.LENGTH_LONG).show();
 	}
 
 	private String getEncoding() {
