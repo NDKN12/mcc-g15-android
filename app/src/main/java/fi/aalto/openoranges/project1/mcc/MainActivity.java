@@ -5,6 +5,7 @@ import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -18,12 +19,16 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -53,7 +58,11 @@ import androidVNC.VncConstants;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
+
+import static android.R.attr.rotation;
+import static android.R.attr.visible;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
@@ -68,8 +77,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private ApplicationList mAppList = null;
     private getApplicationTask mGetAppTask = null;
 
+    private TimeoutOperation mSleeper  = null;
+
     private TextView mTextView;
-    private TextView mTextViewTest;
 
     private String mAppsListTest = "void";
     private ArrayList<JSONObject> arrays = null;
@@ -85,8 +95,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private double mLongitude;
     //private double mUsedLatitude;
     //private double mUsedLongitude;
-    private int mResumeCounter = 0;
-    private int mResumeTest;
+    private int mResumeTest = 0;
+    private View mNoLocationPermission;
     //private double mDistance;
 
 
@@ -101,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         mListView = findViewById(R.id.oo_AppsListView);
         mProgressView = findViewById(R.id.logout_progress);
+        mNoLocationPermission = findViewById(R.id.noLocationPermission);
 
         // Create an instance of GoogleAPIClient.
         if (mGoogleApiClient == null) {
@@ -118,15 +129,17 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mTextView = (TextView) findViewById(R.id.textView);
         // mListTextView = (TextView) findViewById(R.id.Liste);
 
-        ImageButton refreshButton = (ImageButton) findViewById(R.id.refresh);
-        refreshButton.setOnClickListener(new View.OnClickListener() {
+        ImageButton mRefreshButton = (ImageButton) findViewById(R.id.refresh);
+        mRefreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mLatitude = 60.186794;
-                mLongitude = 24.822153;
+                //mLatitude = 60.186794;
+                //mLongitude = 24.822153;
+                mSleeper = new TimeoutOperation();
+                mSleeper.execute((Void) null);
+                showProgress(true);
                 mAppList = new ApplicationList();
                 mAppList.execute((Void) null);
-                Toast.makeText(MainActivity.this, "List updated", Toast.LENGTH_LONG).show();
             }
         });
 
@@ -431,7 +444,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     protected void onStart() {
         super.onStart();
         showProgress(true);
-        mResumeTest = mResumeCounter + 1;
+        mResumeTest = 1;
         //Connect the client
         mGoogleApiClient.connect();
         // ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -444,7 +457,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         //Disconnect the client
         mGoogleApiClient.disconnect();
         super.onStop();// ATTENTION: This was auto-generated to implement the App Indexing API.
-// See https://g.co/AppIndexing/AndroidStudio for more information.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
         AppIndex.AppIndexApi.end(mGoogleApiClient, getIndexApiAction());
     }
 
@@ -458,6 +471,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
             return;
         }
+
+        mNoLocationPermission.setVisibility(View.INVISIBLE);
 
         mLocationRequest = LocationRequest.create();
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -480,9 +495,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 if (permission.equals(Manifest.permission.ACCESS_FINE_LOCATION)) {
                     if (grantResult == PackageManager.PERMISSION_GRANTED) {
                         //Identifying location update parameters
-
+                        mGoogleApiClient.disconnect();
+                        this.onStart();
+                        //Toast.makeText(MainActivity.this, String.valueOf(mLatitude), Toast.LENGTH_SHORT).show();
+                        //mAppList = new ApplicationList();
+                        //mAppList.execute((Void) null);
                     } else {
-                        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+                        //default location
+                        mLatitude = 0.0;
+                        mLongitude = 0.0;
+                        mAppList = new ApplicationList();
+                        mAppList.execute((Void) null);
+                        mNoLocationPermission.setVisibility(View.VISIBLE);
+                        //ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
                     }
                 }
             }
@@ -504,10 +529,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         Log.i(LOG_TAG, location.toString());
         mLatitude = location.getLatitude();
         mLongitude = location.getLongitude();
-        if (mResumeTest != mResumeCounter) {
+        if (mResumeTest != 0) {
             mAppList = new ApplicationList();
             mAppList.execute((Void) null);
-            mResumeCounter = mResumeTest;
+            mResumeTest = 0;
         }
     }
 
@@ -544,9 +569,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     public Response post(String url) throws IOException {
+        RequestBody body = RequestBody.create(JSON, "");
         Request request = new Request.Builder()
                 .url(url)
                 .addHeader("Authorization", mToken)
+                .post(body)
                 .build();
         return client.newCall(request).execute();
     }
@@ -623,11 +650,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 finish();
             } else {
                 Toast.makeText(MainActivity.this, "Server connection failed!", Toast.LENGTH_SHORT).show();
-
-                //TESTING
-                Intent i = new Intent(MainActivity.this, LoginActivity.class);
-                startActivity(i);
-                finish();
             }
         }
 
@@ -635,6 +657,25 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         protected void onCancelled() {
             mAuthTask = null;
             showProgress(false);
+        }
+    }
+
+    private class TimeoutOperation extends AsyncTask<Void, Void, Void>{
+
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            try {
+                Thread.sleep(1500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            //Update your layout here
         }
     }
 }
