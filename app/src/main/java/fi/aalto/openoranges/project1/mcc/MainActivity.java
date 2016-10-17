@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     private String mAppsListTest = "void";
     private ArrayList<JSONObject> arrays = null;
-    private List<Application> myApps = new ArrayList<Application>();
+    private List<Application> myApps = new ArrayList<>();
 
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
@@ -121,7 +121,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         ImageButton refreshButton = (ImageButton) findViewById(R.id.refresh);
         refreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onClick(View view)
+            {
                 mLatitude = 60.186794;
                 mLongitude = 24.822153;
                 mAppList = new ApplicationList();
