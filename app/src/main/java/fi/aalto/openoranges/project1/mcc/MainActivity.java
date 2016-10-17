@@ -5,7 +5,6 @@ import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -19,11 +18,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -61,9 +57,6 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-import static android.R.attr.rotation;
-import static android.R.attr.visible;
-
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     private String mToken;
@@ -83,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     private String mAppsListTest = "void";
     private ArrayList<JSONObject> arrays = null;
-    private List<Application> myApps = new ArrayList<Application>();
+    private List<Application> myApps = new ArrayList<>();
 
     /**
      * Keep track of the login task to ensure we can cancel it if requested.

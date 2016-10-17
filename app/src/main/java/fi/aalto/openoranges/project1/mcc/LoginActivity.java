@@ -20,7 +20,10 @@ import android.widget.TextView;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -206,15 +209,68 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     /**
+     * https://codebutchery.wordpress.com/2014/08/27/how-to-get-the-sha1-hash-sum-of-a-string-in-android/
+     * Returns the SHA1 hash for the provided String
+     *
+     * @param text
+     * @return the SHA1 hash or null if an error occurs
+     */
+    public static String SHA1(String text) {
+
+        try {
+
+            MessageDigest md;
+            md = MessageDigest.getInstance("SHA-1");
+            md.update(text.getBytes("UTF-8"),
+                    0, text.length());
+            byte[] sha1hash = md.digest();
+
+            return toHex(sha1hash);
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static String toHex(byte[] buf) {
+
+        if (buf == null) return "";
+
+        int l = buf.length;
+        StringBuffer result = new StringBuffer(2 * l);
+
+        for (int i = 0; i < buf.length; i++) {
+            appendHex(result, buf[i]);
+        }
+
+        return result.toString();
+
+    }
+
+    private final static String HEX = "0123456789ABCDEF";
+
+    private static void appendHex(StringBuffer sb, byte b) {
+
+        sb.append(HEX.charAt((b >> 4) & 0x0f))
+                .append(HEX.charAt(b & 0x0f));
+
+    }
+
+    /**
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
      */
     public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 
         private final String mUsername;
-        private final String mPassword;
+        private String mPassword;
         private String mToken;
         private boolean isInternetAvailable;
+
 
         UserLoginTask(String username, String password) {
             mUsername = username;
@@ -223,9 +279,10 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
 
+            mPassword = SHA1(mPassword).toLowerCase();
             String login_body = "{\"username\":\"" + mUsername + "\",\"password\":\"" + mPassword + "\"}";
+
             try {
                 // Simulate network access.
                 Response response = post("https://mccg15.herokuapp.com/users/login", login_body);
