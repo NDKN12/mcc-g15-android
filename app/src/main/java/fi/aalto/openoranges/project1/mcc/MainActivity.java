@@ -1,6 +1,8 @@
 package fi.aalto.openoranges.project1.mcc;
 
 
+import android.*;
+import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
@@ -22,12 +24,16 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.view.SimpleDraweeView;
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -84,11 +90,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private View mListView;
     private double mLatitude;
     private double mLongitude;
-    private double mUsedLatitude;
-    private double mUsedLongitude;
+    //private double mUsedLatitude;
+    //private double mUsedLongitude;
     private int mResumeCounter = 0;
     private int mResumeTest;
-    private double mDistance;
+    //private double mDistance;
 
 
     @Override
@@ -105,19 +111,29 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         // Create an instance of GoogleAPIClient.
         if (mGoogleApiClient == null) {
+            // ATTENTION: This "addApi(AppIndex.API)"was auto-generated to implement the App Indexing API.
+            // See https://g.co/AppIndexing/AndroidStudio for more information.
             mGoogleApiClient = new GoogleApiClient.Builder(this)
                     .addConnectionCallbacks(this)
                     .addOnConnectionFailedListener(this)
                     .addApi(LocationServices.API)
-                    .build();
+                    .addApi(AppIndex.API).build();
         }
 
         mToken = getIntent().getStringExtra("token");
 
         mTextView = (TextView) findViewById(R.id.textView);
-        mTextViewTest = (TextView) findViewById(R.id.textViewTest);
         // mListTextView = (TextView) findViewById(R.id.Liste);
 
+        ImageButton refreshButton = (ImageButton) findViewById(R.id.refresh);
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mAppList = new ApplicationList();
+                mAppList.execute((Void) null);
+                Toast.makeText(MainActivity.this, "List updated", Toast.LENGTH_LONG).show();
+            }
+        });
 
         Button logoutButton = (Button) findViewById(R.id.logout);
         logoutButton.setOnClickListener(new View.OnClickListener() {
@@ -151,6 +167,22 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         ArrayAdapter<Application> adapter = new MyListAdapter();
         ListView list = (ListView) findViewById(R.id.oo_AppsListView);
         list.setAdapter(adapter);
+    }
+
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    public Action getIndexApiAction() {
+        Thing object = new Thing.Builder()
+                .setName("Main Page") // TODO: Define a title for the content shown.
+                // TODO: Make sure this auto-generated URL is correct.
+                .setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]"))
+                .build();
+        return new Action.Builder(Action.TYPE_VIEW)
+                .setObject(object)
+                .setActionStatus(Action.STATUS_TYPE_COMPLETED)
+                .build();
     }
 
     private class MyListAdapter extends ArrayAdapter<Application> {
@@ -341,8 +373,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             // String lat = "12.124124";
             // String lng = "12.344345";
 
-            mUsedLatitude = mLatitude;
-            mUsedLongitude = mLongitude;
+            //mUsedLatitude = mLatitude;
+            //mUsedLongitude = mLongitude;
 
             mLatitudeText = String.valueOf(mLatitude);
             mLongitudeText = String.valueOf(mLongitude);
@@ -407,23 +439,28 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mResumeTest = mResumeCounter + 1;
         //Connect the client
         mGoogleApiClient.connect();
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        AppIndex.AppIndexApi.start(mGoogleApiClient, getIndexApiAction());
     }
 
     @Override
     protected void onStop() {
         //Disconnect the client
         mGoogleApiClient.disconnect();
-        super.onStop();
+        super.onStop();// ATTENTION: This was auto-generated to implement the App Indexing API.
+// See https://g.co/AppIndexing/AndroidStudio for more information.
+        AppIndex.AppIndexApi.end(mGoogleApiClient, getIndexApiAction());
     }
 
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
 
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 
             // No explanation needed, we can request the permission.
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
             return;
         }
 
@@ -445,12 +482,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 String permission = permissions[i];
                 int grantResult = grantResults[i];
 
-                if (permission.equals(android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+                if (permission.equals(Manifest.permission.ACCESS_FINE_LOCATION)) {
                     if (grantResult == PackageManager.PERMISSION_GRANTED) {
                         //Identifying location update parameters
 
                     } else {
-                        ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+                        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
                     }
                 }
             }
@@ -472,30 +509,28 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         Log.i(LOG_TAG, location.toString());
         mLatitude = location.getLatitude();
         mLongitude = location.getLongitude();
-        mTextViewTest.setText(String.valueOf(mDistance));
-        if (checkDistance() || mResumeTest != mResumeCounter) {
+        if (mResumeTest != mResumeCounter) {
             mAppList = new ApplicationList();
             mAppList.execute((Void) null);
             mResumeCounter = mResumeTest;
-            Toast.makeText(MainActivity.this, "Updating Location!", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private boolean checkDistance() {
-        double d2r = (3.14159265359 / 180);
-        double dlat = (mLatitude - mUsedLatitude) * d2r;
-        double dlong = (mLongitude - mUsedLongitude) * d2r;
-        double a = pow(sin(dlat / 2.0), 2) + cos(mUsedLatitude * d2r) * cos(mLatitude * d2r) * pow(sin(dlong / 2.0), 2);
-        double c = 2 * atan2(sqrt(a), sqrt(1 - a));
-        double d = 6367000 * c;  //meters
-        mDistance = d;
-
-        if (d > 20) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+//    private boolean checkDistance() {
+//        double d2r = (3.14159265359 / 180);
+//        double dlat = (mLatitude - mUsedLatitude) * d2r;
+//        double dlong = (mLongitude - mUsedLongitude) * d2r;
+//        double a = pow(sin(dlat / 2.0), 2) + cos(mUsedLatitude * d2r) * cos(mLatitude * d2r) * pow(sin(dlong / 2.0), 2);
+//        double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+//        double d = 6367000 * c;  //meters
+//        mDistance = d;
+//
+//        if (d > 20) {
+//            return true;
+//        } else {
+//            return false;
+//        }
+//    }
 
 
     //Logout activity
