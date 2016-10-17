@@ -1,7 +1,6 @@
 package fi.aalto.openoranges.project1.mcc;
 
 
-import android.*;
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -55,12 +54,6 @@ import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-
-import static java.lang.Math.atan2;
-import static java.lang.Math.cos;
-import static java.lang.Math.pow;
-import static java.lang.Math.sin;
-import static java.lang.Math.sqrt;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
@@ -129,6 +122,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         refreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                mLatitude = 60.186794;
+                mLongitude = 24.822153;
                 mAppList = new ApplicationList();
                 mAppList.execute((Void) null);
                 Toast.makeText(MainActivity.this, "List updated", Toast.LENGTH_LONG).show();
