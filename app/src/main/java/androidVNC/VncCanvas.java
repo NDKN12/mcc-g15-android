@@ -141,7 +141,6 @@ public class VncCanvas extends ImageView {
 
 	/**
 	 * Create a view showing a VNC connection
-	 * @param context Containing context (activity)
 	 * @param bean Connection settings
 	 * @param setModes Callback to run on UI thread after connection is set up
 	 */
