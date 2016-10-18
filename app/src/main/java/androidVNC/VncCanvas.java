@@ -1013,7 +1013,7 @@ public class VncCanvas extends ImageView {
 
 	private Runnable reDraw = new Runnable() {
 		public void run() {
-			if (false) {
+			if (showDesktopInfo) {
 				// Show a Toast with the desktop info on first frame draw.
 				showDesktopInfo = false;
 				showConnectionInfo();

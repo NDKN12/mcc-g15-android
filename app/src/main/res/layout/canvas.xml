@@ -5,6 +5,14 @@
              android:orientation="vertical"
     >
 
+    <androidVNC.VncCanvas
+        android:id="@+id/vnc_canvas"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_gravity="bottom|center"
+        >
+    </androidVNC.VncCanvas>
+
     <androidVNC.ZoomControls
         android:id="@+id/zoomer"
         android:layout_width="wrap_content"
@@ -16,16 +24,9 @@
         android:id="@+id/back"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Back"
         android:layout_gravity="bottom|left"
+        android:text="Back"
         />
 
-    <androidVNC.VncCanvas
-        android:id="@+id/vnc_canvas"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_gravity="bottom|center"
-        >
-    </androidVNC.VncCanvas>
 
 </FrameLayout>

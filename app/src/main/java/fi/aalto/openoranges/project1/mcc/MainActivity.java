@@ -24,7 +24,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -70,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private ApplicationList mAppList = null;
     private getApplicationTask mGetAppTask = null;
 
-    private TimeoutOperation mSleeper  = null;
+    private TimeoutOperation mSleeper = null;
 
     private TextView mTextView;
 
@@ -325,8 +324,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mVmUrl = mVmUrl.substring(0, mVmUrl.length() - 5);
 
             if (success) {
-                Toast.makeText(MainActivity.this, "SUCCESS :" + mVmUrl, Toast.LENGTH_LONG).show();
-
                 ConnectionBean selected = new ConnectionBean();
                 selected.setAddress(mVmUrl);
                 selected.setPassword("12345678");
@@ -653,7 +650,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    private class TimeoutOperation extends AsyncTask<Void, Void, Void>{
+    private class TimeoutOperation extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected Void doInBackground(Void... params) {
