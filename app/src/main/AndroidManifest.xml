@@ -38,7 +38,8 @@
         <activity
             android:name="androidVNC.VncCanvasActivity"
             android:configChanges="orientation|keyboardHidden"
-            android:screenOrientation="landscape">
+            android:screenOrientation="landscape"
+            android:launchMode="singleTop">
 
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -52,6 +53,10 @@
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme">>
         </activity>
+
+        <service
+            android:name="com.services.MyService"
+            android:stopWithTask="false" />
     </application>
 
 

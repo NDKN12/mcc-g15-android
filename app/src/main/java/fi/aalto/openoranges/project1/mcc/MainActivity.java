@@ -157,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 mGoogleApiClient.disconnect();
                 Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
                 showProgress(true);
-                mGetAppTask = new getApplicationTask(clickedApp.getId());
+                mGetAppTask = new getApplicationTask(clickedApp.getId(), clickedApp.getName());
                 mGetAppTask.execute((Void) null);
             }
         });
@@ -261,10 +261,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
      */
     public class getApplicationTask extends AsyncTask<Void, Void, Boolean> {
         private final String mId;
+        private final String mName;
         private String mVmUrl;
 
-        public getApplicationTask(String id) {
+        public getApplicationTask(String id, String name) {
             mId = id;
+            mName = name;
         }
 
         @Override
@@ -339,6 +341,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 intent.putExtra(VncConstants.CONNECTION, selected.Gen_getValues());
                 intent.putExtra("token", mToken);
                 intent.putExtra("id", mId);
+                intent.putExtra("name", mName);
+
                 try {
                     startActivity(intent);
                 } catch (Exception i) {
@@ -353,7 +357,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         @Override
         protected void onCancelled() {
             mGetAppTask = null;
-
         }
     }
 
@@ -668,4 +671,5 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             //Update your layout here
         }
     }
+
 }

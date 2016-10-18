@@ -23,6 +23,8 @@ package androidVNC;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -35,6 +37,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -51,6 +54,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.services.MyService;
 import com.antlersoft.android.bc.BCFactory;
 
 import java.io.IOException;
@@ -542,6 +546,8 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
     Button backButton;
     private String mToken;
     private String mId;
+    private String mName;
+    private final int mNotifyId = 1;
     OkHttpClient client = new OkHttpClient();
     private cancelApplication mCancelApplication = null;
 
@@ -684,7 +690,24 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
 
         mToken = getIntent().getStringExtra("token");
         mId = getIntent().getStringExtra("id");
+        mName = getIntent().getStringExtra("name");
         registerClickCallback();
+
+        //Notification in status bar
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(VncCanvasActivity.this)
+                .setSmallIcon(R.drawable.icon_white)
+                .setContentTitle(mName + " running")
+                .setContentText("Click to open the application screen");
+
+        // Creates an explicit intent for an Activity in your app
+        Intent resultIntent = new Intent(VncCanvasActivity.this, VncCanvasActivity.class);
+        resultIntent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+        resultIntent.setAction(Long.toString(System.currentTimeMillis()));
+        mBuilder.setContentIntent(PendingIntent.getActivity(VncCanvasActivity.this,0,resultIntent,PendingIntent.FLAG_UPDATE_CURRENT));
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        // mNotifyID allows you to update the notification later on.
+        mNotificationManager.notify(mNotifyId, mBuilder.build());
+        startService();
     }
 
     private void registerClickCallback() {
@@ -697,7 +720,6 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
             }
         });
     }
-
 
     public Response DELETE(String url) throws IOException {
         Request request = new Request.Builder()
@@ -742,6 +764,9 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
 
             if (success) {
                 Toast.makeText(VncCanvasActivity.this, "VM has been terminated!", Toast.LENGTH_SHORT).show();
+                NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                mNotificationManager.cancel(mNotifyId);
+                stopService();
 
                 Intent intent = new Intent(VncCanvasActivity.this, MainActivity.class);
                 intent.putExtra("token", mToken);
@@ -1795,5 +1820,16 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
             return "DPAD_PAN_TOUCH_MOUSE";
         }
 
+    }
+
+
+    // Method to start the service for notification icon
+    public void startService() {
+        startService(new Intent(this, MyService.class));
+    }
+
+    // Method to stop the service for notification icon
+    public void stopService() {
+        stopService(new Intent(this, MyService.class));
     }
 }
