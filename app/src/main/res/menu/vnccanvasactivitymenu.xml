@@ -39,7 +39,7 @@
     <item android:alphabeticShortcut="k" android:id="@+id/itemArrowUp" android:title="@string/arrow_up"/>
     <item android:alphabeticShortcut="l" android:id="@+id/itemArrowRight" android:title="@string/arrow_right"></item>
     <item android:id="@+id/itemOpenDoc" android:title="@string/open_doc" android:icon="@android:drawable/ic_menu_help"/>
-   
+
 
 
 

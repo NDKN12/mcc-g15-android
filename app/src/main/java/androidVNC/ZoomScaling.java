@@ -70,7 +70,7 @@ class ZoomScaling extends AbstractScaling {
 	 * @see android.androidVNC.AbstractScaling#zoomIn(android.androidVNC.VncCanvasActivity)
 	 */
 	@Override
-	void zoomIn(VncCanvasActivity activity) {
+	public void zoomIn(VncCanvasActivity activity) {
 		resetMatrix();
 		standardizeScaling();
 		scaling += 0.25;

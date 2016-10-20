@@ -54,8 +54,8 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.services.MyService;
 import com.antlersoft.android.bc.BCFactory;
+import com.services.MyService;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -624,6 +624,7 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
                 connection.setAddress(host.substring(0, host.indexOf(':')));
             }
         }
+
         try {
             setContentView(fi.aalto.openoranges.project1.mcc.R.layout.canvas);
             vncCanvas = (VncCanvas) findViewById(fi.aalto.openoranges.project1.mcc.R.id.vnc_canvas);
@@ -632,7 +633,6 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
             e.printStackTrace();
         }
 
-
         vncCanvas.initializeVncCanvas(connection, new Runnable() {
             public void run() {
                 setModes();
@@ -640,6 +640,7 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
         });
         vncCanvas.setOnGenericMotionListener(this);
         zoomer.hide();
+
         zoomer.setOnZoomInClickListener(new View.OnClickListener() {
 
             /*
@@ -684,8 +685,8 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
             }
 
         });
-        panner = new Panner(this, vncCanvas.handler);
 
+        panner = new Panner(this, vncCanvas.handler);
         inputHandler = getInputHandlerById(fi.aalto.openoranges.project1.mcc.R.id.itemInputFitToScreen);
 
         mToken = getIntent().getStringExtra("token");
@@ -703,12 +704,14 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
         Intent resultIntent = new Intent(VncCanvasActivity.this, VncCanvasActivity.class);
         resultIntent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
         resultIntent.setAction(Long.toString(System.currentTimeMillis()));
-        mBuilder.setContentIntent(PendingIntent.getActivity(VncCanvasActivity.this,0,resultIntent,PendingIntent.FLAG_UPDATE_CURRENT));
+        mBuilder.setContentIntent(PendingIntent.getActivity(VncCanvasActivity.this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT));
         NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         // mNotifyID allows you to update the notification later on.
         mNotificationManager.notify(mNotifyId, mBuilder.build());
         startService();
+
     }
+
 
     private void registerClickCallback() {
         backButton = (Button) findViewById(R.id.back);
@@ -798,6 +801,9 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
                 .setScaleTypeForActivity(this);
         this.inputHandler = handler;
         showPanningState();
+        vncCanvas.scaling.zoomIn(VncCanvasActivity.this);
+        vncCanvas.scaling.zoomIn(VncCanvasActivity.this);
+        vncCanvas.scaling.zoomIn(VncCanvasActivity.this);
     }
 
     ConnectionBean getConnection() {
@@ -848,6 +854,7 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
         vncCanvas.enableRepaints();
         super.onRestart();
     }
+
 
     /**
      * {@inheritDoc}

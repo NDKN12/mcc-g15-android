@@ -329,6 +329,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 ConnectionBean selected = new ConnectionBean();
                 selected.setAddress(mVmUrl);
                 selected.setPassword("12345678");
+                selected.setForceFull(1L);
+
                 try {
                     selected.setPort(Integer.parseInt(port));
                 } catch (NumberFormatException nfe) {
