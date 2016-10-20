@@ -1077,6 +1077,8 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.cancel(1);
         if (isFinishing()) {
             vncCanvas.closeConnection();
             vncCanvas.onDestroy();

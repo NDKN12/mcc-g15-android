@@ -26,6 +26,15 @@ public class MyService extends Service {
         super.onTaskRemoved(rootIntent);
     }
 
+    @Override
+    public void onDestroy(){
+        //close notification
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.cancel(1);
+
+        super.onDestroy();
+    }
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {

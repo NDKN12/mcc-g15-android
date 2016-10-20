@@ -89,6 +89,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     //private double mUsedLongitude;
     private int mResumeTest = 0;
     private View mNoLocationPermission;
+    private Button mLogoutButton;
+    private ImageButton mRefreshButton;
     //private double mDistance;
 
 
@@ -121,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mTextView = (TextView) findViewById(R.id.textView);
         // mListTextView = (TextView) findViewById(R.id.Liste);
 
-        ImageButton mRefreshButton = (ImageButton) findViewById(R.id.refresh);
+        mRefreshButton = (ImageButton) findViewById(R.id.refresh);
         mRefreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -135,8 +137,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
 
-        Button logoutButton = (Button) findViewById(R.id.logout);
-        logoutButton.setOnClickListener(new View.OnClickListener() {
+        mLogoutButton = (Button) findViewById(R.id.logout);
+        mLogoutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 attemptLogout();
@@ -152,10 +154,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             @Override
             public void onItemClick(AdapterView<?> parent, View viewClicked, int position, long id) {
                 Application clickedApp = myApps.get(position);
-                String message = "Launching " + clickedApp.getName() + " wait for the VM to start!";
-
                 mGoogleApiClient.disconnect();
-                Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
+                mLogoutButton.setEnabled(false);
+                mRefreshButton.setEnabled(false);
                 showProgress(true);
                 mGetAppTask = new getApplicationTask(clickedApp.getId(), clickedApp.getName());
                 mGetAppTask.execute((Void) null);
@@ -280,6 +281,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 if (code == 200) {
                     JSONObject myjson = new JSONObject(response.body().string().toString());
                     mVmUrl = myjson.getString("vm_url");
+                    runOnUiThread(new Runnable() {
+                        public void run() {
+                            Toast.makeText(MainActivity.this, "Launching " + mName + " wait for the VM to start!", Toast.LENGTH_LONG).show();
+                            }
+                        });
                     return true;
                 } else if (code == 202) {
                     while (counter < 20) {
@@ -308,7 +314,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         });
                     }
                     return false;
-                } else {
+                }else if (code == 500) {
+                    runOnUiThread(new Runnable() {
+                        public void run() {
+                            Toast.makeText(MainActivity.this, "VM of " + mName +  " still disconnecting. Please wait!", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                    return false;
+                }else {
                     return false;
                 }
             } catch (Exception i) {
@@ -321,11 +334,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         protected void onPostExecute(Boolean success) {
             mGetAppTask = null;
             showProgress(false);
-            mGoogleApiClient.connect();
-            String port = mVmUrl.substring(mVmUrl.length() - 4);
-            mVmUrl = mVmUrl.substring(0, mVmUrl.length() - 5);
 
             if (success) {
+                mGoogleApiClient.connect();
+                String port = mVmUrl.substring(mVmUrl.length() - 4);
+                mVmUrl = mVmUrl.substring(0, mVmUrl.length() - 5);
+
                 ConnectionBean selected = new ConnectionBean();
                 selected.setAddress(mVmUrl);
                 selected.setPassword("12345678");
@@ -338,12 +352,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     Log.d("NumberFormatException", nfe.toString());
                 }
 
+                    Intent intent = new Intent(MainActivity.this, VncCanvasActivity.class);
+                    intent.putExtra(VncConstants.CONNECTION, selected.Gen_getValues());
+                    intent.putExtra("token", mToken);
+                    intent.putExtra("id", mId);
+                    intent.putExtra("name", mName);
 
-                Intent intent = new Intent(MainActivity.this, VncCanvasActivity.class);
-                intent.putExtra(VncConstants.CONNECTION, selected.Gen_getValues());
-                intent.putExtra("token", mToken);
-                intent.putExtra("id", mId);
-                intent.putExtra("name", mName);
 
                 try {
                     startActivity(intent);
@@ -351,14 +365,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     i.printStackTrace();
                 }
                 finish();
-            } else {
-                Toast.makeText(MainActivity.this, "FAILURE", Toast.LENGTH_LONG).show();
+            }
+            else {
+                //Toast.makeText(MainActivity.this, "FAILURE", Toast.LENGTH_LONG).show();
             }
         }
 
         @Override
         protected void onCancelled() {
             mGetAppTask = null;
+            showProgress(false);
         }
     }
 
@@ -440,6 +456,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onStart();
         showProgress(true);
         mResumeTest = 1;
+        mLogoutButton.setEnabled(true);
+        mRefreshButton.setEnabled(true);
         //Connect the client
         mGoogleApiClient.connect();
         // ATTENTION: This was auto-generated to implement the App Indexing API.
