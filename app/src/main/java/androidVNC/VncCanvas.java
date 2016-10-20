@@ -194,11 +194,6 @@ public class VncCanvas extends ImageView {
                                 error = "VNC authentication failed!";
                             }
                             final String error_ = error + "<br>" + e.getLocalizedMessage();
-                            handler.post(new Runnable() {
-                                public void run() {
-                                    Utils.showFatalErrorMessage(getContext(), error_);
-                                }
-                            });
                         }
                     }
                 }
