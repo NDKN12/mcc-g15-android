@@ -743,8 +743,8 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
         protected Boolean doInBackground(Void... params) {
             int counter = 0;
             try {
-                // Simulate network access.
-                Response response = VncCanvasActivity.this.DELETE("https://mccg15.herokuapp.com/application/" + mId);
+                String server_url= getString(R.string.server);
+                Response response = VncCanvasActivity.this.DELETE(server_url+"application/" + mId);
                 int code = response.code();
 
                 if (code == 202) {

@@ -30,9 +30,7 @@ import android.widget.Toast;
 
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.drawee.view.SimpleDraweeView;
-import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -127,8 +125,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mRefreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //mLatitude = 60.186794;
-                //mLongitude = 24.822153;
+
                 mSleeper = new TimeoutOperation();
                 mSleeper.execute((Void) null);
                 showProgress(true);
@@ -168,22 +165,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         ArrayAdapter<Application> adapter = new MyListAdapter();
         ListView list = (ListView) findViewById(R.id.oo_AppsListView);
         list.setAdapter(adapter);
-    }
-
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    public Action getIndexApiAction() {
-        Thing object = new Thing.Builder()
-                .setName("Main Page") // TODO: Define a title for the content shown.
-                // TODO: Make sure this auto-generated URL is correct.
-                .setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]"))
-                .build();
-        return new Action.Builder(Action.TYPE_VIEW)
-                .setObject(object)
-                .setActionStatus(Action.STATUS_TYPE_COMPLETED)
-                .build();
     }
 
     private class MyListAdapter extends ArrayAdapter<Application> {
@@ -274,8 +255,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         protected Boolean doInBackground(Void... params) {
             int counter = 0;
             try {
-                // Simulate network access.
-                Response response = MainActivity.this.get("https://mccg15.herokuapp.com/application/" + mId);
+                String server_url = getString(R.string.server);
+                Response response = MainActivity.this.get(server_url + "application/" + mId);
                 int code = response.code();
 
                 if (code == 200) {
@@ -290,7 +271,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 } else if (code == 202) {
                     while (counter < 20) {
                         Thread.sleep(10000);
-                        response = MainActivity.this.get("https://mccg15.herokuapp.com/application/" + mId);
+
+                        response = MainActivity.this.get(server_url + "application/" + mId);
                         if (response.code() == 200) {
                             JSONObject myjson = new JSONObject(response.body().string().toString());
                             mVmUrl = myjson.getString("vm_url");
@@ -400,8 +382,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             String l = "?lat=" + mLatitudeText + "&lng=" + mLongitudeText;
 
             try {
-                // Simulate network access.
-                Response response = getList("https://mccg15.herokuapp.com/application" + l);
+                String server_url = getString(R.string.server);
+                Response response = getList(server_url + "application" + l);
                 int code = response.code();
                 if (code == 200) {
                     mAppsListTest = response.body().string().toString();
@@ -438,6 +420,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             mAppList = null;
             arrays = list;
 
+            if(arrays.isEmpty()){
+                Toast.makeText(MainActivity.this, "FAILURE: No Applications or no connection!", Toast.LENGTH_SHORT).show();
+            }
             populateAppList();
 
         }
@@ -460,18 +445,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mRefreshButton.setEnabled(true);
         //Connect the client
         mGoogleApiClient.connect();
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        AppIndex.AppIndexApi.start(mGoogleApiClient, getIndexApiAction());
     }
 
     @Override
     protected void onStop() {
         //Disconnect the client
         mGoogleApiClient.disconnect();
-        super.onStop();// ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        AppIndex.AppIndexApi.end(mGoogleApiClient, getIndexApiAction());
+        super.onStop();
     }
 
 
@@ -510,7 +490,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         //Identifying location update parameters
                         mGoogleApiClient.disconnect();
                         this.onStart();
-                        //Toast.makeText(MainActivity.this, String.valueOf(mLatitude), Toast.LENGTH_SHORT).show();
+
                         //mAppList = new ApplicationList();
                         //mAppList.execute((Void) null);
                     } else {
@@ -637,8 +617,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         protected Boolean doInBackground(Void... params) {
 
             try {
-                // Simulate network access.
-                Response response = post("https://mccg15.herokuapp.com/users/logout");
+                String server_url=getString(R.string.server);
+                Response response = post(server_url+"users/logout");
                 int code = response.code();
                 if (code == 200) {
                     return true;

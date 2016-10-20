@@ -3,8 +3,6 @@ package fi.aalto.openoranges.project1.mcc;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.app.NotificationManager;
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -23,7 +21,6 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -48,6 +45,7 @@ public class LoginActivity extends AppCompatActivity {
      */
     private UserLoginTask mAuthTask = null;
 
+    public int code;
 
     // UI references.
     private EditText mUsernameView;
@@ -91,7 +89,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onStart(){
+    protected void onStart() {
         super.onStart();
     }
 
@@ -205,16 +203,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
 
-    public boolean isInternetAvailable() {
-        try {
-            InetAddress ipAddr = InetAddress.getByName("google.com"); //You can replace it with your name
-            return !ipAddr.equals("");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     /**
      * https://codebutchery.wordpress.com/2014/08/27/how-to-get-the-sha1-hash-sum-of-a-string-in-android/
      * Returns the SHA1 hash for the provided String
@@ -267,6 +255,7 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
+
     /**
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
@@ -276,7 +265,6 @@ public class LoginActivity extends AppCompatActivity {
         private final String mUsername;
         private String mPassword;
         private String mToken;
-        private boolean isInternetAvailable;
 
 
         UserLoginTask(String username, String password) {
@@ -289,17 +277,17 @@ public class LoginActivity extends AppCompatActivity {
 
             mPassword = SHA1(mPassword).toLowerCase();
             String login_body = "{\"username\":\"" + mUsername + "\",\"password\":\"" + mPassword + "\"}";
-
+            String login = "users/login";
+            String server_url = getString(R.string.server);
             try {
                 // Simulate network access.
-                Response response = post("https://mccg15.herokuapp.com/users/login", login_body);
-                int code = response.code();
+                Response response = post(server_url + login, login_body);
+                code = response.code();
                 if (code == 200) {
                     JSONObject myjson = new JSONObject(response.body().string().toString());
                     mToken = myjson.getString("token");
 
                 } else {
-                    isInternetAvailable = isInternetAvailable();
                     return false;
                 }
             } catch (Exception i) {
@@ -319,11 +307,11 @@ public class LoginActivity extends AppCompatActivity {
                 Intent i = new Intent(LoginActivity.this, MainActivity.class);
                 i.putExtra("token", mToken);
                 startActivity(i);
-            } else if (!isInternetAvailable) {
-                mPasswordView.setError("No internet connection!");
+            } else if (code == 401) {
+                mPasswordView.setError("Either username or password is incorrect!");
                 mPasswordView.requestFocus();
             } else {
-                mPasswordView.setError("Either username or password is incorrect!");
+                mPasswordView.setError("No server or internet connection!");
                 mPasswordView.requestFocus();
             }
         }
