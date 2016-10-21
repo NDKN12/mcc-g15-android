@@ -91,7 +91,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //initialize fresco for downloading icon images
         Fresco.initialize(this);
+
         setContentView(R.layout.activity_main);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -115,13 +117,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mToken = getIntent().getStringExtra("token");
 
         mTextView = (TextView) findViewById(R.id.textView);
-        // mListTextView = (TextView) findViewById(R.id.Liste);
 
         mRefreshButton = (ImageButton) findViewById(R.id.refresh);
         mRefreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 mSleeper = new TimeoutOperation();
                 mSleeper.execute((Void) null);
                 showProgress(true);
@@ -160,33 +160,35 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
 
-    //Setting up of the list of applications
-    private void populateListView() {
-        ArrayAdapter<Application> adapter = new MyListAdapter();
+    //adding the applications in the list to the ListView
+    private void addingAppsToListView() {
+        ArrayAdapter<Application> adapter = new ListAdapter();
         ListView list = (ListView) findViewById(R.id.oo_AppsListView);
         list.setAdapter(adapter);
     }
 
-    private class MyListAdapter extends ArrayAdapter<Application> {
-        public MyListAdapter() {
+    /**
+     * class to add applications to the list
+     */
+    private class ListAdapter extends ArrayAdapter<Application> {
+        public ListAdapter() {
             super(MainActivity.this, R.layout.item_view, myApps);
         }
 
-
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            //Make sure to have a view to work with
+            //Ensure to have a view which is not null
             View itemView = convertView;
             if (itemView == null)
                 itemView = getLayoutInflater().inflate(R.layout.item_view, parent, false);
-            //find app to work with
+            //finding app in the list on position
             Application currentApp = myApps.get(position);
 
-            //Fill the view
+            //Fill the view with the apps using inflater
             Uri uri = Uri.parse(currentApp.getIcon_url());
-            SimpleDraweeView draweeView = (SimpleDraweeView) itemView.findViewById(R.id.imageView);
+            SimpleDraweeView view = (SimpleDraweeView) itemView.findViewById(R.id.imageView);
             try {
-                draweeView.setImageURI(uri);
+                view.setImageURI(uri);
             } catch (Exception i) {
                 i.printStackTrace();
             }
@@ -196,13 +198,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             TextView nameText = (TextView) itemView.findViewById(R.id.nameText);
             nameText.setText(currentApp.getName());
 
-            //Fill the textview with the description of the app
-            //TextView descriptionText = (TextView) itemView.findViewById(R.id.nameText);
-            //descriptionText.setText(currentApp.getDescription());
             return itemView;
         }
     }
 
+    //fill arraylist with the apps, received from the server
     private void populateAppList() {
         myApps = new ArrayList<>();
         for (int j = 0; j < arrays.size(); j++) {
@@ -221,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             myApps.add(new Application(name, id, icon_url, description));
         }
         showProgress(false);
-        populateListView();
+        addingAppsToListView();
     }
 
     /**
@@ -233,12 +233,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         @Override
         protected ArrayList<JSONObject> doInBackground(Void... params) {
-
-            // String lat = "12.124124";
-            // String lng = "12.344345";
-
-            //mUsedLatitude = mLatitude;
-            //mUsedLongitude = mLongitude;
 
             mLatitudeText = String.valueOf(mLatitude);
             mLongitudeText = String.valueOf(mLongitude);
@@ -260,14 +254,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                             JSONObject another_json_object = the_json_array.getJSONObject(i);
                             arrays.add(another_json_object);
                         }
-                        JSONObject[] jsons = new JSONObject[arrays.size()];
-                        arrays.toArray(jsons);
+                        JSONObject[] json = new JSONObject[arrays.size()];
+                        arrays.toArray(json);
                         return arrays;
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 } else {
-
                     return arrays;
                 }
             } catch (Exception i) {
@@ -275,21 +268,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 return null;
             }
             return arrays;
-
         }
 
 
         protected void onPostExecute(ArrayList<JSONObject> list) {
-            if(list == null){
+            //checks if received list is empty or not
+            if (list == null) {
                 showProgress(false);
                 Toast.makeText(MainActivity.this, "List could not be refreshed due to missing internet connection!", Toast.LENGTH_LONG).show();
-            }
-            else{
+            } else {
                 mAppList = null;
                 arrays = list;
                 populateAppList();
             }
-
         }
 
         @Override
@@ -300,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
 
-    //Methods for starting application
+    //Method for starting application and register which app is clicked
     private void registerClickCallback() {
         ListView list = (ListView) findViewById(R.id.oo_AppsListView);
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -319,6 +310,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         return get(url);
     }
 
+    //Sends a json request to the server and returns the response
+    //receives as parameters a string which represents the url of the server
     public Response get(String url) throws IOException {
         Request request = new Request.Builder()
                 .url(url)
@@ -349,19 +342,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 Response response = MainActivity.this.get(server_url + "application/" + mId);
                 int code = response.code();
 
+                //if the code is 200 than everything is okay and vnc viewer can start
+                //if the code is 202 wait for the VM to get started
                 if (code == 200) {
                     JSONObject myjson = new JSONObject(response.body().string().toString());
                     mVmUrl = myjson.getString("vm_url");
                     runOnUiThread(new Runnable() {
                         public void run() {
                             Toast.makeText(MainActivity.this, "Launching " + mName + " wait for the VM to start!", Toast.LENGTH_LONG).show();
-                            }
-                        });
+                        }
+                    });
                     return true;
                 } else if (code == 202) {
                     while (counter < 20) {
-                        Thread.sleep(10000);
-
+                        Thread.sleep(8000);
                         response = MainActivity.this.get(server_url + "application/" + mId);
                         if (response.code() == 200) {
                             JSONObject myjson = new JSONObject(response.body().string().toString());
@@ -386,14 +380,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         });
                     }
                     return false;
-                }else if (code == 500) {
+                } else if (code == 500) {
                     runOnUiThread(new Runnable() {
                         public void run() {
-                            Toast.makeText(MainActivity.this, "VM of " + mName +  " still disconnecting. Please wait!", Toast.LENGTH_LONG).show();
+                            Toast.makeText(MainActivity.this, "VM of " + mName + " still disconnecting. Please wait!", Toast.LENGTH_LONG).show();
                         }
                     });
                     return false;
-                }else {
+                } else {
                     return false;
                 }
             } catch (Exception i) {
@@ -425,11 +419,11 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     Log.d("NumberFormatException", nfe.toString());
                 }
 
-                    Intent intent = new Intent(MainActivity.this, VncCanvasActivity.class);
-                    intent.putExtra(VncConstants.CONNECTION, selected.Gen_getValues());
-                    intent.putExtra("token", mToken);
-                    intent.putExtra("id", mId);
-                    intent.putExtra("name", mName);
+                Intent intent = new Intent(MainActivity.this, VncCanvasActivity.class);
+                intent.putExtra(VncConstants.CONNECTION, selected.Gen_getValues());
+                intent.putExtra("token", mToken);
+                intent.putExtra("id", mId);
+                intent.putExtra("name", mName);
 
 
                 try {
@@ -438,13 +432,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     i.printStackTrace();
                 }
                 finish();
-            }
-            else {
-                if (isInternetAvailable == false){
+            } else {
+                if (isInternetAvailable == false) {
                     Toast.makeText(MainActivity.this, "Application can not be opened due to missing internet connection!", Toast.LENGTH_LONG).show();
                     mLogoutButton.setEnabled(true);
-                    mRefreshButton.setEnabled(true);}
-                    else{}
+                    mRefreshButton.setEnabled(true);
+                } else {
+                }
                 //Toast.makeText(MainActivity.this, "Failure", Toast.LENGTH_LONG).show();
             }
         }
@@ -534,7 +528,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
 
-
     //Logout activity
     private void attemptLogout() {
         if (mAuthTask != null) {
@@ -569,8 +562,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         protected Boolean doInBackground(Void... params) {
 
             try {
-                String server_url=getString(R.string.server);
-                Response response = post(server_url+"users/logout");
+                String server_url = getString(R.string.server);
+                Response response = post(server_url + "users/logout");
                 int code = response.code();
                 if (code == 200) {
                     return true;

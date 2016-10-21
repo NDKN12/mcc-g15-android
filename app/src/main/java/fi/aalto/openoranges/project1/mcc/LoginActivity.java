@@ -151,14 +151,18 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
+    //checks if username is longer than 4 returns true if it is valid
     private boolean isUsernameValid(String username) {
         return username.length() > 4;
     }
 
+    //checks if password is longer than 4 returns true if it is valid
     private boolean isPasswordValid(String password) {
         return password.length() > 4;
     }
 
+    //Sends a json request to the server and retruns the response
+    //receives as parameters a string which represents the url and json which represents the json body as string
     Response post(String url, String json) throws IOException {
         RequestBody body = RequestBody.create(JSON, json);
         Request request = new Request.Builder()
@@ -198,6 +202,14 @@ public class LoginActivity extends AppCompatActivity {
         return null;
     }
 
+
+    /**
+     * This method is called when the sha1 hash is generated
+     * https://codebutchery.wordpress.com/2014/08/27/how-to-get-the-sha1-hash-sum-of-a-string-in-android/
+     *
+     * @param buf
+     * @return string
+     */
     public static String toHex(byte[] buf) {
 
         if (buf == null) return "";
@@ -215,6 +227,13 @@ public class LoginActivity extends AppCompatActivity {
 
     private final static String HEX = "0123456789ABCDEF";
 
+    /**
+     * This method is called when the sha1 hash is generated
+     * https://codebutchery.wordpress.com/2014/08/27/how-to-get-the-sha1-hash-sum-of-a-string-in-android/
+     *
+     * @param sb
+     * @param b
+     */
     private static void appendHex(StringBuffer sb, byte b) {
 
         sb.append(HEX.charAt((b >> 4) & 0x0f))
@@ -247,7 +266,7 @@ public class LoginActivity extends AppCompatActivity {
             String login = "users/login";
             String server_url = getString(R.string.server);
             try {
-                // Simulate network access.
+                //requests server to approve username/password
                 Response response = post(server_url + login, login_body);
                 code = response.code();
                 if (code == 200) {
@@ -270,6 +289,7 @@ public class LoginActivity extends AppCompatActivity {
             mAuthTask = null;
             showProgress(false);
 
+            //if server responds with 200 MainActivity is called otherwise show error
             if (success) {
                 Intent i = new Intent(LoginActivity.this, MainActivity.class);
                 i.putExtra("token", mToken);
