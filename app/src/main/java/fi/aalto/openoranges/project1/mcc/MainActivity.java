@@ -372,6 +372,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         }
                         counter++;
                     }
+                    //
                     if (counter >= 20) {
                         runOnUiThread(new Runnable() {
                             public void run() {
