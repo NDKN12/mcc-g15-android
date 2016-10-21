@@ -152,8 +152,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             public void onItemClick(AdapterView<?> parent, View viewClicked, int position, long id) {
                 Application clickedApp = myApps.get(position);
                 mGoogleApiClient.disconnect();
-                mLogoutButton.setEnabled(false);
-                mRefreshButton.setEnabled(false);
                 showProgress(true);
                 mGetAppTask = new getApplicationTask(clickedApp.getId(), clickedApp.getName());
                 mGetAppTask.execute((Void) null);
@@ -245,6 +243,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         private final String mId;
         private final String mName;
         private String mVmUrl;
+        private boolean isInternetAvailable = true;
 
         public getApplicationTask(String id, String name) {
             mId = id;
@@ -307,6 +306,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     return false;
                 }
             } catch (Exception i) {
+                isInternetAvailable = false;
                 i.printStackTrace();
                 return false;
             }
@@ -349,7 +349,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 finish();
             }
             else {
-                //Toast.makeText(MainActivity.this, "FAILURE", Toast.LENGTH_LONG).show();
+                if (isInternetAvailable == false){
+                    Toast.makeText(MainActivity.this, "Application can not be opened due to missing internet connection!", Toast.LENGTH_LONG).show();
+                    mLogoutButton.setEnabled(true);
+                    mRefreshButton.setEnabled(true);}
+                    else{}
+                //Toast.makeText(MainActivity.this, "Failure", Toast.LENGTH_LONG).show();
             }
         }
 
@@ -359,7 +364,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             showProgress(false);
         }
     }
-
 
     /**
      * Represents an asynchronous task used to get a list of applications from the server
@@ -417,13 +421,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
 
         protected void onPostExecute(ArrayList<JSONObject> list) {
-            mAppList = null;
-            arrays = list;
+            if(list == null){
+                showProgress(false);
+                Toast.makeText(MainActivity.this, "List could not be refreshed due to missing internet connection!", Toast.LENGTH_LONG).show();
 
-            if(arrays.isEmpty()){
-                Toast.makeText(MainActivity.this, "FAILURE: No Applications or no connection!", Toast.LENGTH_SHORT).show();
             }
-            populateAppList();
+            else{
+                mAppList = null;
+                arrays = list;
+                populateAppList();
+                }
 
         }
 

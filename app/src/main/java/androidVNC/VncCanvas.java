@@ -448,6 +448,7 @@ public class VncCanvas extends ImageView {
             }
         } catch (Exception e) {
             throw e;
+
         } finally {
             Log.v(TAG, "Closing VNC Connection");
             rfb.close();
