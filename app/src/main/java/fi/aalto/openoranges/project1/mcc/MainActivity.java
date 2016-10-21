@@ -1,6 +1,5 @@
 package fi.aalto.openoranges.project1.mcc;
 
-
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -56,21 +55,21 @@ import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
-    private String mToken;
+    //Initialization for location service
     private int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION;
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
+    private View mNoLocationPermission;
+    private double mLatitude;
+    private double mLongitude;
 
+    //Initialization for Application List
     private static final String LOG_TAG = "MainActivity";
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     OkHttpClient client = new OkHttpClient();
     private ApplicationList mAppList = null;
     private getApplicationTask mGetAppTask = null;
-
-    private TimeoutOperation mSleeper = null;
-
     private TextView mTextView;
-
     private String mAppsListTest = "void";
     private ArrayList<JSONObject> arrays = null;
     private List<Application> myApps = new ArrayList<>();
@@ -81,15 +80,12 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private UserLogoutTask mAuthTask = null;
     private View mProgressView;
     private View mListView;
-    private double mLatitude;
-    private double mLongitude;
-    //private double mUsedLatitude;
-    //private double mUsedLongitude;
     private int mResumeTest = 0;
-    private View mNoLocationPermission;
     private Button mLogoutButton;
     private ImageButton mRefreshButton;
-    //private double mDistance;
+    private TimeoutOperation mSleeper = null;
+
+    private String mToken;
 
 
     @Override
@@ -145,20 +141,26 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         registerClickCallback();
     }
 
-    private void registerClickCallback() {
-        ListView list = (ListView) findViewById(R.id.oo_AppsListView);
-        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View viewClicked, int position, long id) {
-                Application clickedApp = myApps.get(position);
-                mGoogleApiClient.disconnect();
-                showProgress(true);
-                mGetAppTask = new getApplicationTask(clickedApp.getId(), clickedApp.getName());
-                mGetAppTask.execute((Void) null);
-            }
-        });
+    @Override
+    protected void onStart() {
+        super.onStart();
+        showProgress(true);
+        mResumeTest = 1;
+        mLogoutButton.setEnabled(true);
+        mRefreshButton.setEnabled(true);
+        //Connect the client
+        mGoogleApiClient.connect();
     }
 
+    @Override
+    protected void onStop() {
+        //Disconnect the client
+        mGoogleApiClient.disconnect();
+        super.onStop();
+    }
+
+
+    //Setting up of the list of applications
     private void populateListView() {
         ArrayAdapter<Application> adapter = new MyListAdapter();
         ListView list = (ListView) findViewById(R.id.oo_AppsListView);
@@ -201,7 +203,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-
     private void populateAppList() {
         myApps = new ArrayList<>();
         for (int j = 0; j < arrays.size(); j++) {
@@ -223,6 +224,97 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         populateListView();
     }
 
+    /**
+     * Represents an asynchronous task used to get a list of applications from the server
+     */
+    public class ApplicationList extends AsyncTask<Void, Void, ArrayList<JSONObject>> {
+        private String mLatitudeText;
+        private String mLongitudeText;
+
+        @Override
+        protected ArrayList<JSONObject> doInBackground(Void... params) {
+
+            // String lat = "12.124124";
+            // String lng = "12.344345";
+
+            //mUsedLatitude = mLatitude;
+            //mUsedLongitude = mLongitude;
+
+            mLatitudeText = String.valueOf(mLatitude);
+            mLongitudeText = String.valueOf(mLongitude);
+            String l = "?lat=" + mLatitudeText + "&lng=" + mLongitudeText;
+
+            try {
+                String server_url = getString(R.string.server);
+                Response response = getList(server_url + "application" + l);
+                int code = response.code();
+                if (code == 200) {
+                    mAppsListTest = response.body().string().toString();
+                    mAppsListTest = "{'apps': " + mAppsListTest + "}";
+                    try {
+                        JSONObject myjson = new JSONObject(mAppsListTest);
+                        JSONArray the_json_array = myjson.getJSONArray("apps");
+                        int size = the_json_array.length();
+                        arrays = new ArrayList<JSONObject>();
+                        for (int i = 0; i < size; i++) {
+                            JSONObject another_json_object = the_json_array.getJSONObject(i);
+                            arrays.add(another_json_object);
+                        }
+                        JSONObject[] jsons = new JSONObject[arrays.size()];
+                        arrays.toArray(jsons);
+                        return arrays;
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+
+                    return arrays;
+                }
+            } catch (Exception i) {
+                i.printStackTrace();
+                return null;
+            }
+            return arrays;
+
+        }
+
+
+        protected void onPostExecute(ArrayList<JSONObject> list) {
+            if(list == null){
+                showProgress(false);
+                Toast.makeText(MainActivity.this, "List could not be refreshed due to missing internet connection!", Toast.LENGTH_LONG).show();
+            }
+            else{
+                mAppList = null;
+                arrays = list;
+                populateAppList();
+            }
+
+        }
+
+        @Override
+        protected void onCancelled() {
+            mAppList = null;
+
+        }
+    }
+
+
+    //Methods for starting application
+    private void registerClickCallback() {
+        ListView list = (ListView) findViewById(R.id.oo_AppsListView);
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View viewClicked, int position, long id) {
+                Application clickedApp = myApps.get(position);
+                mGoogleApiClient.disconnect();
+                showProgress(true);
+                mGetAppTask = new getApplicationTask(clickedApp.getId(), clickedApp.getName());
+                mGetAppTask.execute((Void) null);
+            }
+        });
+    }
+
     public Response getList(String url) throws IOException {
         return get(url);
     }
@@ -234,7 +326,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 .build();
         return client.newCall(request).execute();
     }
-
 
     /**
      * Represents an asynchronous task used to get the address of the chosen application
@@ -365,103 +456,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    /**
-     * Represents an asynchronous task used to get a list of applications from the server
-     */
-    public class ApplicationList extends AsyncTask<Void, Void, ArrayList<JSONObject>> {
-        private String mLatitudeText;
-        private String mLongitudeText;
-
-        @Override
-        protected ArrayList<JSONObject> doInBackground(Void... params) {
-
-            // String lat = "12.124124";
-            // String lng = "12.344345";
-
-            //mUsedLatitude = mLatitude;
-            //mUsedLongitude = mLongitude;
-
-            mLatitudeText = String.valueOf(mLatitude);
-            mLongitudeText = String.valueOf(mLongitude);
-            String l = "?lat=" + mLatitudeText + "&lng=" + mLongitudeText;
-
-            try {
-                String server_url = getString(R.string.server);
-                Response response = getList(server_url + "application" + l);
-                int code = response.code();
-                if (code == 200) {
-                    mAppsListTest = response.body().string().toString();
-                    mAppsListTest = "{'apps': " + mAppsListTest + "}";
-                    try {
-                        JSONObject myjson = new JSONObject(mAppsListTest);
-                        JSONArray the_json_array = myjson.getJSONArray("apps");
-                        int size = the_json_array.length();
-                        arrays = new ArrayList<JSONObject>();
-                        for (int i = 0; i < size; i++) {
-                            JSONObject another_json_object = the_json_array.getJSONObject(i);
-                            arrays.add(another_json_object);
-                        }
-                        JSONObject[] jsons = new JSONObject[arrays.size()];
-                        arrays.toArray(jsons);
-                        return arrays;
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-
-                    return arrays;
-                }
-            } catch (Exception i) {
-                i.printStackTrace();
-                return null;
-            }
-            return arrays;
-
-        }
-
-
-        protected void onPostExecute(ArrayList<JSONObject> list) {
-            if(list == null){
-                showProgress(false);
-                Toast.makeText(MainActivity.this, "List could not be refreshed due to missing internet connection!", Toast.LENGTH_LONG).show();
-
-            }
-            else{
-                mAppList = null;
-                arrays = list;
-                populateAppList();
-                }
-
-        }
-
-        @Override
-        protected void onCancelled() {
-            mAppList = null;
-
-        }
-    }
-
 
     //Location services
-    @Override
-    protected void onStart() {
-        super.onStart();
-        showProgress(true);
-        mResumeTest = 1;
-        mLogoutButton.setEnabled(true);
-        mRefreshButton.setEnabled(true);
-        //Connect the client
-        mGoogleApiClient.connect();
-    }
-
-    @Override
-    protected void onStop() {
-        //Disconnect the client
-        mGoogleApiClient.disconnect();
-        super.onStop();
-    }
-
-
     @Override
     public void onConnected(@Nullable Bundle bundle) {
 
@@ -483,6 +479,29 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.i(LOG_TAG, "GoogleApiClient has been suspended");
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.i(LOG_TAG, "GoogleApiClient has been suspended");
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        Log.i(LOG_TAG, location.toString());
+        mLatitude = location.getLatitude();
+        mLongitude = location.getLongitude();
+        if (mResumeTest != 0) {
+            mAppList = new ApplicationList();
+            mAppList.execute((Void) null);
+            mResumeTest = 0;
+        }
+    }
+
+    //Permission handling
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -514,43 +533,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
-    @Override
-    public void onConnectionSuspended(int i) {
-        Log.i(LOG_TAG, "GoogleApiClient has been suspended");
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.i(LOG_TAG, "GoogleApiClient has been suspended");
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-        Log.i(LOG_TAG, location.toString());
-        mLatitude = location.getLatitude();
-        mLongitude = location.getLongitude();
-        if (mResumeTest != 0) {
-            mAppList = new ApplicationList();
-            mAppList.execute((Void) null);
-            mResumeTest = 0;
-        }
-    }
-
-//    private boolean checkDistance() {
-//        double d2r = (3.14159265359 / 180);
-//        double dlat = (mLatitude - mUsedLatitude) * d2r;
-//        double dlong = (mLongitude - mUsedLongitude) * d2r;
-//        double a = pow(sin(dlat / 2.0), 2) + cos(mUsedLatitude * d2r) * cos(mLatitude * d2r) * pow(sin(dlong / 2.0), 2);
-//        double c = 2 * atan2(sqrt(a), sqrt(1 - a));
-//        double d = 6367000 * c;  //meters
-//        mDistance = d;
-//
-//        if (d > 20) {
-//            return true;
-//        } else {
-//            return false;
-//        }
-//    }
 
 
     //Logout activity
@@ -558,7 +540,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         if (mAuthTask != null) {
             return;
         }
-
 
         boolean cancel = false;
         View focusView = null;
@@ -576,42 +557,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 .post(body)
                 .build();
         return client.newCall(request).execute();
-    }
-
-    /**
-     * Shows the progress UI and hides the login form.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
-    private void showProgress(final boolean show) {
-        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
-        // for very easy animations. If available, use these APIs to fade-in
-        // the progress spinner.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
-            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
-
-            mListView.setVisibility(show ? View.GONE : View.VISIBLE);
-            mListView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mListView.setVisibility(show ? View.GONE : View.VISIBLE);
-                }
-            });
-
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mProgressView.animate().setDuration(shortAnimTime).alpha(
-                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-                }
-            });
-        } else {
-            // The ViewPropertyAnimator APIs are not available, so simply show
-            // and hide the relevant UI components.
-            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mListView.setVisibility(show ? View.GONE : View.VISIBLE);
-        }
     }
 
     /**
@@ -660,6 +605,44 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
     }
 
+
+    /**
+     * Shows the progress bar
+     */
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+    private void showProgress(final boolean show) {
+        // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
+        // for very easy animations. If available, use these APIs to fade-in
+        // the progress spinner.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+
+            mListView.setVisibility(show ? View.GONE : View.VISIBLE);
+            mListView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mListView.setVisibility(show ? View.GONE : View.VISIBLE);
+                }
+            });
+
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mProgressView.animate().setDuration(shortAnimTime).alpha(
+                    show ? 1 : 0).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+                }
+            });
+        } else {
+            // The ViewPropertyAnimator APIs are not available, so simply show
+            // and hide the relevant UI components.
+            mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
+            mListView.setVisibility(show ? View.GONE : View.VISIBLE);
+        }
+    }
+
+    //Sleeper for refreshing function
     private class TimeoutOperation extends AsyncTask<Void, Void, Void> {
 
         @Override

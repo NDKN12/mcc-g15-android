@@ -23,10 +23,8 @@ package androidVNC;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.KeyguardManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -524,9 +522,6 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
         }
     }
 
-    private BroadcastReceiver mReceiver = null;
-    private NotificationCompat.Builder mBuilder;
-
     private final static String TAG = "VncCanvasActivity";
 
     AbstractInputHandler inputHandler;
@@ -700,25 +695,14 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
         mName = getIntent().getStringExtra("name");
         registerClickCallback();
 
-        //Initializing SCREEN_OFF Listener
-        final IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
-        filter.addAction(Intent.ACTION_SCREEN_OFF);
-        //mReceiver = new ScreenReceiver();
-        registerReceiver(mReceiver, filter);
-
         //Notification in status bar
-        mBuilder = new NotificationCompat.Builder(VncCanvasActivity.this)
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(VncCanvasActivity.this)
                 .setSmallIcon(R.drawable.icon_white)
                 .setContentTitle(mName + " running")
                 .setContentText("Click to open the application screen");
 
         // Creates an explicit intent for an Activity in your app
         Intent resultIntent = new Intent(VncCanvasActivity.this, VncCanvasActivity.class);
-        //resultIntent.putExtra(VncConstants.CONNECTION, VncConstants.CONNECTION);
-        //resultIntent.putExtra("token", mToken);
-        //resultIntent.putExtra("id", mId);
-        //resultIntent.putExtra("name", mName);
-        //resultIntent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
         resultIntent.setAction(Long.toString(System.currentTimeMillis()));
         mBuilder.setContentIntent(PendingIntent.getActivity(VncCanvasActivity.this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT));
 
@@ -727,23 +711,6 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
         mNotificationManager.notify(mNotifyId, mBuilder.build());
         startService();
     }
-
-//    public class ScreenReceiver extends BroadcastReceiver {
-//
-//        private boolean wasScreenOn = true;
-//
-//        @Override
-//        public void onReceive(final Context context, final Intent intent) {
-//            if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
-//                mBuilder.setPriority(NotificationCompat.PRIORITY_MIN);
-//                wasScreenOn = false;
-//            } else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)) {
-//                mBuilder.setPriority(NotificationCompat.PRIORITY_DEFAULT);
-//                wasScreenOn = true;
-//            }
-//        }
-//
-//    }
 
 
     private void registerClickCallback() {
@@ -1115,10 +1082,6 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
             vncCanvas.closeConnection();
             vncCanvas.onDestroy();
             database.close();
-        }
-        if (mReceiver != null) {
-            unregisterReceiver(mReceiver);
-            mReceiver = null;
         }
     }
 
