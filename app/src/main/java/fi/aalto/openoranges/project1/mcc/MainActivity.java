@@ -354,6 +354,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     });
                     return true;
                 } else if (code == 202) {
+                    //waiting for the vm to start
                     while (counter < 20) {
                         Thread.sleep(8000);
                         response = MainActivity.this.get(server_url + "application/" + mId);
@@ -371,14 +372,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                             return false;
                         }
                         counter++;
-                    }
-                    //
-                    if (counter >= 20) {
-                        runOnUiThread(new Runnable() {
-                            public void run() {
-                                Toast.makeText(MainActivity.this, "Time exceeded, we are sorry!", Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                        if (counter >= 20) {
+                            runOnUiThread(new Runnable() {
+                                public void run() {
+                                    Toast.makeText(MainActivity.this, "Time exceeded, we are sorry!", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                            return false;
+                        }
                     }
                     return false;
                 } else if (code == 500) {
@@ -440,7 +441,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     mRefreshButton.setEnabled(true);
                 } else {
                 }
-                //Toast.makeText(MainActivity.this, "Failure", Toast.LENGTH_LONG).show();
             }
         }
 
@@ -554,8 +554,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     }
 
     /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
+     * Represents an asynchronous logout task used to logout the user, make token invalid
      */
     public class UserLogoutTask extends AsyncTask<Void, Void, Boolean> {
 
@@ -652,7 +651,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         @Override
         protected void onPostExecute(Void result) {
-            //Update your layout here
         }
     }
 

@@ -30,7 +30,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.PointF;
@@ -693,6 +692,8 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
         mToken = getIntent().getStringExtra("token");
         mId = getIntent().getStringExtra("id");
         mName = getIntent().getStringExtra("name");
+
+        //listener for the back-button
         registerClickCallback();
 
         //Notification in status bar
@@ -713,6 +714,7 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
     }
 
 
+    //calls mCancelAPPLICATIOn to exit and shutting down the VM
     private void registerClickCallback() {
         backButton = (Button) findViewById(R.id.back);
         backButton.setOnClickListener(new View.OnClickListener() {
@@ -734,17 +736,15 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
 
 
     /**
-     * Represents an asynchronous task used to get the address of the chosen application
+     * Represents an asynchronous task used to exit and tell server to shut vm on cloud
      */
     public class cancelApplication extends AsyncTask<Void, Void, Boolean> {
-
-
         @Override
         protected Boolean doInBackground(Void... params) {
-            int counter = 0;
+
             try {
-                String server_url= getString(R.string.server);
-                Response response = VncCanvasActivity.this.DELETE(server_url+"application/" + mId);
+                String server_url = getString(R.string.server);
+                Response response = VncCanvasActivity.this.DELETE(server_url + "application/" + mId);
                 int code = response.code();
 
                 if (code == 202) {
@@ -777,7 +777,6 @@ public class VncCanvasActivity extends Activity implements View.OnGenericMotionL
                 vncCanvas.closeConnection();
                 finish();
             } else {
-                Toast.makeText(VncCanvasActivity.this, "FAILURE", Toast.LENGTH_LONG).show();
                 vncCanvas.closeConnection();
                 finish();
             }
